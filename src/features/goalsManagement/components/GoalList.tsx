@@ -2,10 +2,9 @@ import React from 'react';
 import type { Goal } from '../types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Edit2, Trash2, MoreVertical } from 'lucide-react';
+import { Edit2, Trash2, MoreVertical, Play, Pause } from 'lucide-react';
 
 interface GoalListProps {
   goals: Goal[];
@@ -22,6 +21,14 @@ const GoalList: React.FC<GoalListProps> = ({
   onToggleActive,
   isLoading = false
 }) => {
+  // Función auxiliar para garantizar que pasemos el estado actual
+  const handleToggleActive = (goalId: number, currentState: Goal['active']) => {
+    // Pasamos el ID y el estado actual tal cual lo espera la función del hook
+    onToggleActive(goalId, currentState);
+    
+    // Para debugging
+    console.log(`Toggling goal ${goalId} from ${currentState} to ${currentState === 1 ? 0 : 1}`);
+  };
 
   if (goals.length === 0) {
     return null;
@@ -37,7 +44,7 @@ const GoalList: React.FC<GoalListProps> = ({
           <TableHead className="text-center">Peso</TableHead>
           <TableHead className="text-center">Duración</TableHead>
           <TableHead>Categorías</TableHead>
-          <TableHead className="text-center">Activo</TableHead>
+          <TableHead className="text-center">Estado</TableHead>
           <TableHead className="text-right">Acciones</TableHead>
         </TableRow>
       </TableHeader>
@@ -64,13 +71,25 @@ const GoalList: React.FC<GoalListProps> = ({
               )}
             </TableCell>
             <TableCell className="text-center">
-              <Switch
-                id={`active-toggle-${goal.id}`}
-                checked={goal.active === 1}
-                onCheckedChange={() => onToggleActive(goal.id, goal.active)}
+              <Button
+                variant={goal.active === 1 ? "default" : "outline"}
+                size="sm"
+                className={`px-3 py-1 h-8 ${goal.active === 1 ? "bg-green-600 hover:bg-green-700" : "bg-gray-200 hover:bg-gray-300 border border-gray-300"}`}
+                onClick={() => handleToggleActive(goal.id, goal.active)}
                 disabled={isLoading}
-                aria-label="Toggle goal active state"
-              />
+              >
+                {goal.active === 1 ? (
+                  <>
+                    <span className="mr-1 font-medium">Activa</span>
+                    <Pause className="h-3 w-3" />
+                  </>
+                ) : (
+                  <>
+                    <span className="mr-1 font-medium text-gray-700">Pausada</span>
+                    <Play className="h-3 w-3 text-gray-700" />
+                  </>
+                )}
+              </Button>
             </TableCell>
             <TableCell className="text-right">
               <DropdownMenu>

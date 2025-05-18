@@ -5,6 +5,12 @@ import * as goalService from '@/features/goalsManagement/services/goalService';
 import type { Goal } from '@/features/goalsManagement/types';
 import type { DoneExerciseLogInsert } from '../types';
 
+// HELPER FUNCTION - Place it at the top level of the module
+const getUniqueCategoriesFromGoals = (goals: Goal[]): string[] => {
+  const allCategories = goals.flatMap(goal => goal.categories || []);
+  return Array.from(new Set(allCategories)).sort();
+};
+
 export const useWorkoutSession = () => {
   const { user } = useAuth();
 
@@ -14,9 +20,14 @@ export const useWorkoutSession = () => {
   const [isLoadingMicrocycles, setIsLoadingMicrocycles] = useState<boolean>(true);
 
   // Workout session states
-  const [activeWorkoutGoals, setActiveWorkoutGoals] = useState<Goal[]>([]);
+  const [allActiveGoalsForMicrocycle, setAllActiveGoalsForMicrocycle] = useState<Goal[]>([]); // Renamed from activeWorkoutGoals for clarity
+  const [filteredWorkoutGoals, setFilteredWorkoutGoals] = useState<Goal[]>([]); // NEW: For category filtered goals
   const [currentGoal, setCurrentGoal] = useState<Goal | null>(null);
-  const [isLoadingGoals, setIsLoadingGoals] = useState<boolean>(false); // True when fetching goals for a selected microcycle
+  const [isLoadingGoals, setIsLoadingGoals] = useState<boolean>(false);
+
+  // --- NEW: Category Filtering States ---
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  const [selectedCategoryFilters, setSelectedCategoryFilters] = useState<string[]>([]);
 
   // Performance tracking states
   const [performanceReps, setPerformanceReps] = useState<string>('');
@@ -39,7 +50,6 @@ export const useWorkoutSession = () => {
 
   // Helper to clear performance inputs
   const clearPerformanceInputs = useCallback(() => {
-    console.log('[useWorkoutSession] clearPerformanceInputs: Clearing performance inputs.');
     setPerformanceReps('');
     setPerformanceFailedSet(false);
     setPerformanceWeight('');
@@ -50,22 +60,21 @@ export const useWorkoutSession = () => {
   // Effect 1: Fetch all available microcycles for the user
   useEffect(() => {
     if (user?.id) {
-      console.log('[useWorkoutSession] useEffect (fetch user microcycles): Triggered. User ID:', user.id);
       setIsLoadingMicrocycles(true);
-      setError(null); // Clear previous errors
+      setError(null);
       goalService.fetchMicrocyclesForUser(user.id)
         .then(fetchedUserMicrocycles => {
-          console.log('[useWorkoutSession] useEffect (fetch user microcycles): Service responded. Fetched microcycles:', fetchedUserMicrocycles);
           setUserMicrocycles(fetchedUserMicrocycles);
           if (fetchedUserMicrocycles.length > 0 && selectedWorkoutMicrocycle === null) {
-            // Auto-select the latest microcycle on initial load if none is selected
             const latestMicrocycle = fetchedUserMicrocycles[fetchedUserMicrocycles.length - 1];
             setSelectedWorkoutMicrocycle(latestMicrocycle);
-            console.log('[useWorkoutSession] useEffect (fetch user microcycles): Auto-selected latest microcycle:', latestMicrocycle);
           } else if (fetchedUserMicrocycles.length === 0) {
-            setSelectedWorkoutMicrocycle(null); // No microcycles, so none can be selected
-            setActiveWorkoutGoals([]); // No goals if no microcycles
+            setSelectedWorkoutMicrocycle(null);
+            setAllActiveGoalsForMicrocycle([]); // Clear all goal related states
+            setFilteredWorkoutGoals([]);
             setCurrentGoal(null);
+            setAvailableCategories([]);
+            setSelectedCategoryFilters([]);
           }
         })
         .catch(err => {
@@ -76,146 +85,170 @@ export const useWorkoutSession = () => {
         })
         .finally(() => {
           setIsLoadingMicrocycles(false);
-          console.log('[useWorkoutSession] useEffect (fetch user microcycles): Finished loading microcycles.');
         });
     } else {
       setUserMicrocycles([]);
       setSelectedWorkoutMicrocycle(null);
-      setActiveWorkoutGoals([]);
+      setAllActiveGoalsForMicrocycle([]);
+      setFilteredWorkoutGoals([]);
       setCurrentGoal(null);
+      setAvailableCategories([]);
+      setSelectedCategoryFilters([]);
       setIsLoadingMicrocycles(false);
     }
-  }, [user?.id]); // Runs when user.id changes
+  }, [user?.id]);
 
-  // Effect 2: Fetch active goals when a workout microcycle is selected (or user changes)
+  // Effect 2: Fetch active goals when a workout microcycle is selected
   useEffect(() => {
     if (user?.id && selectedWorkoutMicrocycle !== null) {
-      console.log('[useWorkoutSession] useEffect (fetch active goals for workout): Triggered. User ID:', user.id, 'Selected Workout Microcycle:', selectedWorkoutMicrocycle);
       setIsLoadingGoals(true);
-      setError(null); // Clear previous errors related to goal fetching
+      setError(null);
+      // Reset states related to goals of a microcycle
+      setAllActiveGoalsForMicrocycle([]);
+      setFilteredWorkoutGoals([]);
+      setCurrentGoal(null);
+      setAvailableCategories([]);
+      setSelectedCategoryFilters([]); // Reset category filters when microcycle changes
+
       workoutService.fetchActiveGoalsForWorkout(user.id, selectedWorkoutMicrocycle)
         .then(fetchedGoals => {
-          console.log('[useWorkoutSession] useEffect (fetch active goals for workout): Service responded. Fetched goals:', fetchedGoals);
-          setActiveWorkoutGoals(fetchedGoals);
-          const initialGoal = selectGoalFromList(fetchedGoals);
-          setCurrentGoal(initialGoal);
-          console.log('[useWorkoutSession] useEffect (fetch active goals for workout): Initial goal selected for workout:', initialGoal);
-          clearPerformanceInputs();
+          setAllActiveGoalsForMicrocycle(fetchedGoals); // Store all active goals for this microcycle
+          setAvailableCategories(getUniqueCategoriesFromGoals(fetchedGoals)); // Derive categories
+          // Filtering and setting currentGoal will be handled by the next useEffect
         })
         .catch(err => {
-          console.error('[useWorkoutSession] Error fetching active goals for selected workout microcycle:', err);
+          console.error('[useWorkoutSession] Error fetching active goals:', err);
           setError('Failed to load active goals for the selected microcycle.');
-          setActiveWorkoutGoals([]);
-          setCurrentGoal(null);
+          setAllActiveGoalsForMicrocycle([]);
+          setAvailableCategories([]);
         })
         .finally(() => {
           setIsLoadingGoals(false);
-          console.log('[useWorkoutSession] useEffect (fetch active goals for workout): Finished loading goals.');
         });
     } else if (!selectedWorkoutMicrocycle) {
-      // If no microcycle is selected (e.g., user deselects or no microcycles available)
-      setActiveWorkoutGoals([]);
+      setAllActiveGoalsForMicrocycle([]);
+      setFilteredWorkoutGoals([]);
       setCurrentGoal(null);
+      setAvailableCategories([]);
+      setSelectedCategoryFilters([]);
       clearPerformanceInputs();
-      setIsLoadingGoals(false); // Ensure loading is false
+      setIsLoadingGoals(false);
     }
-  }, [user?.id, selectedWorkoutMicrocycle, selectGoalFromList, clearPerformanceInputs]);
+  }, [user?.id, selectedWorkoutMicrocycle, clearPerformanceInputs]); // Removed selectGoalFromList dependency here as it's handled in next effect
 
-  // Function to allow UI to change the selected workout microcycle
-  const selectWorkoutMicrocycle = useCallback((cycleNumber: number) => {
-    console.log('[useWorkoutSession] selectWorkoutMicrocycle: Microcycle selected for workout:', cycleNumber);
-    setSelectedWorkoutMicrocycle(cycleNumber);
-    // The useEffect for fetching active goals will trigger due to this change
+  // --- NEW: Effect 3: Filter goals and select current goal ---
+  useEffect(() => {
+    if (isLoadingGoals) {
+        // Don't do anything if goals are still loading for the microcycle
+        return;
+    }
+
+    let currentFilteredGoals: Goal[];
+    if (selectedCategoryFilters.length === 0) {
+      currentFilteredGoals = [...allActiveGoalsForMicrocycle]; // No filter, use all
+    } else {
+      currentFilteredGoals = allActiveGoalsForMicrocycle.filter(goal =>
+        goal.categories?.some(cat => selectedCategoryFilters.includes(cat))
+      );
+    }
+    setFilteredWorkoutGoals(currentFilteredGoals); // Update the state for filtered goals
+
+    const newSelectedGoal = selectGoalFromList(currentFilteredGoals);
+    setCurrentGoal(newSelectedGoal);
+    clearPerformanceInputs(); // Clear inputs for the new/potentially null goal
+
+  }, [allActiveGoalsForMicrocycle, selectedCategoryFilters, isLoadingGoals, selectGoalFromList, clearPerformanceInputs]);
+
+
+  // --- NEW: Handler to set category filters ---
+  const handleSelectCategoryFilters = useCallback((categories: string[]) => {
+    setSelectedCategoryFilters(categories);
+    // The useEffect for filtering will pick up this change
   }, []);
 
-  const selectNextGoal = useCallback(() => {
-    console.log('[useWorkoutSession] selectNextGoal: Selecting next goal from active list:', activeWorkoutGoals);
-    const nextGoal = selectGoalFromList(activeWorkoutGoals);
+
+  // Function to allow UI to change the selected workout microcycle
+  const selectWorkoutMicrocycleHandler = useCallback((cycleNumber: number | null) => { // Allow null
+    setSelectedWorkoutMicrocycle(cycleNumber);
+  }, []);
+
+  // Renamed to skipCurrentGoalAndSelectNext for clarity
+  const skipCurrentGoalAndSelectNext = useCallback(() => {
+    // Now selects from the already filtered list
+    const nextGoal = selectGoalFromList(filteredWorkoutGoals);
     setCurrentGoal(nextGoal);
-    console.log('[useWorkoutSession] selectNextGoal: Next goal selected:', nextGoal);
     clearPerformanceInputs();
-    if (!nextGoal) {
-        console.log('[useWorkoutSession] selectNextGoal: No more active goals in the list.');
-    }
-  }, [activeWorkoutGoals, selectGoalFromList, clearPerformanceInputs]);
+  }, [filteredWorkoutGoals, selectGoalFromList, clearPerformanceInputs]);
 
   const handleLogPerformance = async () => {
     if (!currentGoal || !user?.id) {
-      console.error('[useWorkoutSession] handleLogPerformance: No current goal or user to log performance for.');
       setError('No current goal selected or user not available.');
       return;
     }
     const repsDone = parseInt(performanceReps, 10);
-    if (isNaN(repsDone)) {
+    // Validate reps only if goal expects reps
+    if (currentGoal.reps !== null && currentGoal.reps !== undefined && isNaN(repsDone)) {
       setError('Please enter a valid number for reps.');
-      console.error('[useWorkoutSession] handleLogPerformance: Invalid reps input:', performanceReps);
       return;
     }
+
+    const durationDone = performanceDuration !== '' ? parseInt(performanceDuration, 10) : null;
+    // Validate duration only if goal expects duration
+    if (currentGoal.duration_seconds !== null && currentGoal.duration_seconds !== undefined && performanceDuration !== '' && (durationDone === null || isNaN(durationDone))) {
+        setError('Please enter a valid number for duration.');
+        return;
+    }
+
     const logPayload: DoneExerciseLogInsert = {
       user_id: user.id,
       goal_id: currentGoal.id,
-      goal_microcycle_at_log: currentGoal.microcycle,
-      reps_done: repsDone,
+      goal_microcycle_at_log: currentGoal.microcycle, // Use the correct property name from Goal type
+      reps_done: !isNaN(repsDone) ? repsDone : null,
       sets_done_for_this_log: 1,
       failed_set: performanceFailedSet,
       weight_used: performanceWeight !== '' ? parseFloat(performanceWeight) : null,
-      duration_seconds_done: performanceDuration !== '' ? parseInt(performanceDuration, 10) : null,
+      duration_seconds_done: durationDone,
       notes: performanceNotes || null,
     };
-    console.log('[useWorkoutSession] handleLogPerformance: Construyendo log con:', JSON.parse(JSON.stringify(logPayload)));
+
     setIsLoggingPerformance(true);
     setError(null);
     try {
       const loggedExercise = await workoutService.logDoneExercise(logPayload);
-      console.log('[useWorkoutSession] handleLogPerformance: Service responded. Logged exercise:', loggedExercise);
       if (loggedExercise) {
-        selectNextGoal();
+        // Remove logged goal from the source list to prevent re-selection in this session
+        setAllActiveGoalsForMicrocycle(prevGoals => prevGoals.filter(g => g.id !== currentGoal.id));
+        // The useEffect for filtering will then pick a new goal
       } else {
         setError('Failed to log performance. Service returned no data.');
       }
     } catch (err: any) {
-      console.error('[useWorkoutSession] Error logging performance:', err);
       setError(err.message || 'An error occurred while logging performance.');
     } finally {
       setIsLoggingPerformance(false);
-      console.log('[useWorkoutSession] handleLogPerformance: Finished logging performance.');
     }
   };
 
   const handlePauseCurrentGoal = async () => {
     if (!currentGoal || !user?.id) {
-      console.error('[useWorkoutSession] handlePauseCurrentGoal: No current goal to pause.');
       setError('No current goal selected to pause.');
       return;
     }
-
-    console.log('[useWorkoutSession] handlePauseCurrentGoal: Initiating for goal ID:', currentGoal.id);
     setIsPausingGoal(true);
     setError(null);
-
     try {
-      const updatedGoal = await goalService.toggleGoalActiveState(currentGoal.id, 0); // Pass 0 to set to inactive
-      console.log('[useWorkoutSession] handlePauseCurrentGoal: Service responded. Updated goal:', updatedGoal);
-
-      if (updatedGoal && updatedGoal.active === 0) { // Check if the goal is now inactive (0)
-        console.log('[useWorkoutSession] handlePauseCurrentGoal: Condición CUMPLIDA. Meta pausada localmente.');
-        const newActiveGoals = activeWorkoutGoals.filter(goal => goal.id !== currentGoal!.id);
-        setActiveWorkoutGoals(newActiveGoals);
-        console.log('[useWorkoutSession] handlePauseCurrentGoal: Active goals list updated:', newActiveGoals);
-        const nextGoal = selectGoalFromList(newActiveGoals);
-        setCurrentGoal(nextGoal);
-        console.log('[useWorkoutSession] handlePauseCurrentGoal: Next goal selected after pause:', nextGoal);
-        clearPerformanceInputs();
+      const updatedGoal = await goalService.toggleGoalActiveState(currentGoal.id, 0);
+      if (updatedGoal && updatedGoal.active === 0) {
+        // Remove paused goal from the source list
+        setAllActiveGoalsForMicrocycle(prevGoals => prevGoals.filter(g => g.id !== currentGoal!.id));
+        // The useEffect for filtering will then pick a new goal
       } else {
-        console.log('[useWorkoutSession] handlePauseCurrentGoal: Condición NO CUMPLIDA. updatedGoal.active ES:', updatedGoal?.active, 'SE ESPERABA: 0');
         setError('Failed to pause goal or goal state did not change as expected.');
       }
     } catch (err: any) {
-      console.error('[useWorkoutSession] Error pausing goal:', err);
       setError(err.message || 'An error occurred while pausing the goal.');
     } finally {
       setIsPausingGoal(false);
-      console.log('[useWorkoutSession] handlePauseCurrentGoal: Finished pausing goal attempt.');
     }
   };
 
@@ -224,19 +257,28 @@ export const useWorkoutSession = () => {
     userMicrocycles,
     selectedWorkoutMicrocycle,
     isLoadingMicrocycles,
-    activeWorkoutGoals,
+
+    allActiveGoalsForMicrocycle, // Use this to see all remaining goals before filtering
+    filteredWorkoutGoals,       // Goals after category filter
     currentGoal,
     isLoadingGoals,
+
+    availableCategories,        // NOW DECLARED
+    selectedCategoryFilters,    // NOW DECLARED
+    handleSelectCategoryFilters,// NOW DECLARED
+
     performanceReps, setPerformanceReps,
     performanceFailedSet, setPerformanceFailedSet,
     performanceWeight, setPerformanceWeight,
     performanceDuration, setPerformanceDuration,
     performanceNotes, setPerformanceNotes,
+
     isLoggingPerformance,
     isPausingGoal,
     error, setError,
-    selectWorkoutMicrocycle,
-    selectNextGoal,
+
+    selectWorkoutMicrocycle: selectWorkoutMicrocycleHandler, // Use the handler that accepts null
+    selectNextGoal: skipCurrentGoalAndSelectNext,           // Use the renamed function
     handleLogPerformance,
     handlePauseCurrentGoal,
   };

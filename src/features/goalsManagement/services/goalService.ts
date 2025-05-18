@@ -96,11 +96,11 @@ export const deleteGoal = async (goalId: number): Promise<boolean> => {
   return !error;
 };
 
-export const toggleGoalActiveState = async (goalId: number, currentState: 0 | 1): Promise<Goal | null> => {
-  console.log('[goalService] toggleGoalActiveState: Calling Supabase with goalId:', goalId, 'newActiveState:', currentState === 1 ? 0 : 1);
+export const toggleGoalActiveState = async (goalId: number, newActiveState: 0 | 1): Promise<Goal | null> => { // currentState renamed to newActiveState for clarity
+  console.log('[goalService] toggleGoalActiveState: Calling Supabase with goalId:', goalId, 'setting active to:', newActiveState);
   const { data, error } = await supabase
     .from('goals')
-    .update({ active: currentState === 1 ? 0 : 1 })
+    .update({ active: newActiveState })
     .eq('id', goalId)
     .select()
     .single();
