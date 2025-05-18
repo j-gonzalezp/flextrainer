@@ -1,0 +1,1 @@
+export { default as WorkoutPage } from './components/WorkoutPage';

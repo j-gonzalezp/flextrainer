@@ -1,0 +1,1 @@
+export { default as GoalsManagementPage } from './components/GoalsManagementPage';
