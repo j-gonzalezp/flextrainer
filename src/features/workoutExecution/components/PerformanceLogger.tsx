@@ -150,7 +150,7 @@ const PerformanceLogger: React.FC<PerformanceLoggerProps> = ({
           <Button 
             onClick={handleSubmit} 
             disabled={isSubmitting || !performanceReps} // Reps are mandatory
-            className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground" // Emphasize primary action
+            className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground border" // Emphasize primary action
           >
             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null} 
             Registrar Set

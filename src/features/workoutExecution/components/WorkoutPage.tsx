@@ -97,7 +97,7 @@ const WorkoutPage: React.FC = () => {
               )}
               {!mostrarFormularioRendimiento && (
                 <div className="space-y-3">
-                  <Button onClick={() => setMostrarFormularioRendimiento(true)} disabled={isLoggingPerformance || isPausingGoal || !currentGoal} variant="default" size="lg" className="w-full">
+                  <Button onClick={() => setMostrarFormularioRendimiento(true)} disabled={isLoggingPerformance || isPausingGoal || !currentGoal} variant="default" size="lg" className="w-full border">
                     Hecho / Registrar Set
                   </Button>
                   <div className="grid grid-cols-2 gap-3">
