@@ -4,8 +4,23 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from "@/components/ui/button";
+import { Loader2 } from 'lucide-react';
+
+// Interface for SetData (can be imported if moved to a shared types file)
+export interface SetData {
+  reps: string;
+  weight?: string;
+  duration?: string;
+  notes?: string;
+  failed: boolean;
+  isAdditional: boolean; // Will always be false for sets logged by this component now
+}
 
 interface PerformanceLoggerProps {
+  goal: { exercise_name?: string } | null; // For displaying exercise name
+  onLogSubmit: (set: SetData) => void; // MODIFIED: Expects a single SetData object
+  onCancel: () => void;
   performanceReps: string;
   setPerformanceReps: (value: string) => void;
   performanceFailedSet: boolean;
@@ -20,6 +35,9 @@ interface PerformanceLoggerProps {
 }
 
 const PerformanceLogger: React.FC<PerformanceLoggerProps> = ({
+  goal,
+  onLogSubmit,
+  onCancel,
   performanceReps,
   setPerformanceReps,
   performanceFailedSet,
@@ -32,77 +50,113 @@ const PerformanceLogger: React.FC<PerformanceLoggerProps> = ({
   setPerformanceNotes,
   isSubmitting,
 }) => {
+  // All state and effects related to "Additional Sets" and internal pre-filling are removed.
+  // This component now relies on props being pre-filled by useWorkoutSession.
+
+  const handleSubmit = () => {
+    const currentSetData: SetData = {
+      reps: performanceReps,
+      weight: performanceWeight,
+      duration: performanceDuration,
+      notes: performanceNotes,
+      failed: performanceFailedSet,
+      isAdditional: false, // This set is the primary (and only) set from this logger
+    };
+    onLogSubmit(currentSetData);
+  };
+
   return (
-    <Card className="shadow-lg">
+    <Card className="shadow-lg border-primary/20"> {/* Added a subtle border */}
       <CardHeader>
-        <CardTitle className="text-xl">Registrar Rendimiento</CardTitle>
-        <CardDescription>Anota cómo te fue en este set/ejercicio.</CardDescription>
+        <CardTitle className="text-xl">
+          Registrar Set: {goal?.exercise_name || 'Ejercicio Actual'}
+        </CardTitle>
+        <CardDescription>Anota los detalles del set que realizaste.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1">
-            <Label htmlFor="repsDone">Reps Realizadas*</Label>
-            <Input
-              id="repsDone"
-              type="number"
-              value={performanceReps}
-              onChange={(e) => setPerformanceReps(e.target.value)}
-              placeholder="Ej: 8"
-              disabled={isSubmitting}
-              required
+            <Label htmlFor="repsDone" className="text-sm font-medium">Reps Realizadas*</Label>
+            <Input 
+              id="repsDone" 
+              type="number" 
+              value={performanceReps} 
+              onChange={(e) => setPerformanceReps(e.target.value)} 
+              placeholder="Ej: 8" 
+              disabled={isSubmitting} 
+              required 
+              aria-required="true"
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="weightUsed">Peso Utilizado (kg)</Label>
-            <Input
-              id="weightUsed"
-              type="number"
-              step="0.01"
-              value={performanceWeight}
-              onChange={(e) => setPerformanceWeight(e.target.value)}
-              placeholder="Ej: 50.5"
-              disabled={isSubmitting}
+            <Label htmlFor="weightUsed" className="text-sm font-medium">Peso Utilizado (kg)</Label>
+            <Input 
+              id="weightUsed" 
+              type="number" 
+              step="0.01" 
+              value={performanceWeight} 
+              onChange={(e) => setPerformanceWeight(e.target.value)} 
+              placeholder="Ej: 50.5" 
+              disabled={isSubmitting} 
             />
           </div>
         </div>
-
         <div className="space-y-1">
-          <Label htmlFor="durationSecondsDone">Duración (segundos)</Label>
-          <Input
-            id="durationSecondsDone"
-            type="number"
-            value={performanceDuration}
-            onChange={(e) => setPerformanceDuration(e.target.value)}
-            placeholder="Ej: 60"
-            disabled={isSubmitting}
+          <Label htmlFor="durationSecondsDone" className="text-sm font-medium">Duración (segundos)</Label>
+          <Input 
+            id="durationSecondsDone" 
+            type="number" 
+            value={performanceDuration} 
+            onChange={(e) => setPerformanceDuration(e.target.value)} 
+            placeholder="Ej: 60" 
+            disabled={isSubmitting} 
           />
         </div>
-
         <div className="space-y-1">
-          <Label htmlFor="performanceNotes">Notas Adicionales</Label>
-          <Textarea
-            id="performanceNotes"
-            value={performanceNotes}
-            onChange={(e) => setPerformanceNotes(e.target.value)}
-            placeholder="Ej: Buena forma, última rep costó..."
-            disabled={isSubmitting}
-            rows={3}
+          <Label htmlFor="performanceNotes" className="text-sm font-medium">Notas del Set</Label>
+          <Textarea 
+            id="performanceNotes" 
+            value={performanceNotes} 
+            onChange={(e) => setPerformanceNotes(e.target.value)} 
+            placeholder="Ej: Última rep difícil, buena técnica..." 
+            disabled={isSubmitting} 
+            rows={2} 
           />
         </div>
-
         <div className="flex items-center space-x-2 pt-2">
-          <Checkbox
-            id="failedSet"
-            checked={performanceFailedSet}
-            onCheckedChange={(checked) => setPerformanceFailedSet(checked as boolean)}
-            disabled={isSubmitting}
+          <Checkbox 
+            id="failedSet" 
+            checked={performanceFailedSet} 
+            onCheckedChange={(checked) => setPerformanceFailedSet(checked as boolean)} 
+            disabled={isSubmitting} 
           />
-          <Label htmlFor="failedSet" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-            Set Fallido
+          <Label 
+            htmlFor="failedSet" 
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            ¿Set Fallido?
           </Label>
         </div>
-      </CardContent>
 
+        <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-6">
+          <Button 
+            variant="outline" 
+            onClick={onCancel}
+            disabled={isSubmitting}
+            className="w-full sm:w-auto"
+          >
+            Cancelar
+          </Button>
+          <Button 
+            onClick={handleSubmit} 
+            disabled={isSubmitting || !performanceReps} // Reps are mandatory
+            className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground" // Emphasize primary action
+          >
+            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null} 
+            Registrar Set
+          </Button>
+        </div>
+      </CardContent>
     </Card>
   );
 };

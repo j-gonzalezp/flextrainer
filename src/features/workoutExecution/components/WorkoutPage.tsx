@@ -1,235 +1,297 @@
 import React from 'react';
-import { useWorkoutSession } from '../hooks/useWorkoutSession'; // Ensure this path is correct
+import { useWorkoutSession } from '../hooks/useWorkoutSession';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+
 import CurrentExerciseDisplay from './CurrentExerciseDisplay';
-import PerformanceLogger from './PerformanceLogger';
+import PerformanceLogger, { SetData as PerformanceLoggerSetData } from './PerformanceLogger';
+import ChangeExerciseModal from './ChangeExerciseModal';
+import type { Goal } from '@/features/goalsManagement/types';
 
 const WorkoutPage: React.FC = () => {
   const {
     userMicrocycles,
     selectedWorkoutMicrocycle,
     isLoadingMicrocycles,
-    selectWorkoutMicrocycle, // This is selectWorkoutMicrocycleHandler from the hook
-
+    selectWorkoutMicrocycle, 
     currentGoal,
     isLoadingGoals,
     error,
-
-    availableCategories,      // Should now be recognized
-    selectedCategoryFilters,  // Should now be recognized
-    handleSelectCategoryFilters, // Should now be recognized
-
+    availableCategories,
+    selectedCategoryFilters,
+    handleSelectCategoryFilters,
     performanceReps, setPerformanceReps,
     performanceFailedSet, setPerformanceFailedSet,
     performanceWeight, setPerformanceWeight,
     performanceDuration, setPerformanceDuration,
     performanceNotes, setPerformanceNotes,
     isLoggingPerformance, isPausingGoal,
-
-    selectNextGoal, // This is skipCurrentGoalAndSelectNext from the hook
+    selectNextGoal,
     handleLogPerformance,
     handlePauseCurrentGoal,
+    handleChangeCurrentGoal,
   } = useWorkoutSession();
 
+  const [controlesVisibles, setControlesVisibles] = React.useState(true);
+  const [mostrarFormularioRendimiento, setMostrarFormularioRendimiento] = React.useState(false);
+  const [isMicrocycleModalOpen, setIsMicrocycleModalOpen] = React.useState(false);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = React.useState(false);
+  const [isChangeExerciseModalOpen, setIsChangeExerciseModalOpen] = React.useState(false);
+
+  const currentGoalRef = React.useRef(currentGoal);
+
   const onCategoryFilterChange = (category: string, checked: boolean) => {
+    let newFilters;
     if (checked) {
-      handleSelectCategoryFilters([...selectedCategoryFilters, category]);
+      newFilters = [...selectedCategoryFilters, category];
     } else {
-      handleSelectCategoryFilters(selectedCategoryFilters.filter((c: string) => c !== category));
+      newFilters = selectedCategoryFilters.filter((c: string) => c !== category);
     }
+    handleSelectCategoryFilters(newFilters);
+  };
+  
+  const handleOpenChangeExerciseModal = () => {
+    setIsChangeExerciseModalOpen(true);
   };
 
-  if (isLoadingMicrocycles && !selectedWorkoutMicrocycle) { // Show initial microcycle loading
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[300px]">
-        <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-        <p className="text-lg text-muted-foreground">Cargando microciclos disponibles...</p>
-      </div>
-    );
-  }
+  React.useEffect(() => { /* Effect logic */ }, [currentGoal, isLoggingPerformance, isPausingGoal, mostrarFormularioRendimiento]);
+  
+  React.useEffect(() => {
+      if (!currentGoal || (currentGoal && currentGoal.id !== (currentGoalRef.current?.id || null))) {
+          setMostrarFormularioRendimiento(false);
+      }
+      currentGoalRef.current = currentGoal;
+  }, [currentGoal]);
 
-  // Show goal loading if a microcycle is selected and goals are being fetched
-  if (selectedWorkoutMicrocycle !== null && isLoadingGoals) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[300px]">
-        <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-        <p className="text-lg text-muted-foreground">Cargando ejercicios de tu workout...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card className="w-full max-w-lg mx-auto text-center">
-        <CardHeader><CardTitle className="text-destructive">Error</CardTitle></CardHeader>
-        <CardContent><p>{error}</p></CardContent>
-      </Card>
-    );
-  }
-
-  if (userMicrocycles.length === 0 && !isLoadingMicrocycles) {
-    return (
-      <Card className="w-full max-w-lg mx-auto text-center">
-        <CardHeader><CardTitle>Sin Microciclos</CardTitle></CardHeader>
-        <CardContent>
-          <p>No se encontraron microciclos para tu usuario.</p>
-          <p>Dirígete a la sección de Gestión de Metas para crear tu primer microciclo y metas.</p>
-        </CardContent>
-      </Card>
-    );
-  }
+  if (isLoadingMicrocycles && !selectedWorkoutMicrocycle) { return <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)]"><Loader2 className="h-12 w-12 animate-spin text-primary mb-4" /><p className="text-lg text-muted-foreground">Cargando microciclos...</p></div>; }
+  if (selectedWorkoutMicrocycle !== null && isLoadingGoals) { return <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)]"><Loader2 className="h-12 w-12 animate-spin text-primary mb-4" /><p className="text-lg text-muted-foreground">Cargando ejercicios...</p></div>; }
+  if (error) { return <Card className="w-full max-w-lg mx-auto mt-10 text-center"><CardHeader><CardTitle className="text-destructive">Error</CardTitle></CardHeader><CardContent><p>{error}</p></CardContent></Card>; }
+  if (userMicrocycles.length === 0 && !isLoadingMicrocycles) { return <Card className="w-full max-w-lg mx-auto mt-10 text-center"><CardHeader><CardTitle>Sin Microciclos</CardTitle></CardHeader><CardContent><p>No hay microciclos.</p></CardContent></Card>; }
 
   return (
-    <div className="max-w-xl mx-auto p-4 space-y-8">
-      <Card className="shadow-md mb-6">
-        <CardHeader>
-          <CardTitle className="text-lg">Seleccionar Microciclo para Workout</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoadingMicrocycles && userMicrocycles.length === 0 ? ( // More specific loading for initial fetch
-            <p className="text-muted-foreground">Cargando microciclos...</p>
-          ) : userMicrocycles.length > 0 ? (
-            <select
-              value={selectedWorkoutMicrocycle?.toString() ?? ''}
-              onChange={(e) => selectWorkoutMicrocycle(e.target.value ? Number(e.target.value) : null)}
-              className="w-full p-2 border rounded bg-background text-foreground focus:ring-primary focus:border-primary"
-              disabled={isLoadingGoals || isLoadingMicrocycles} // Disable while any primary loading is happening
-            >
-              <option value="">-- Elige un microciclo --</option>
-              {userMicrocycles.map(mc => (
-                <option key={mc} value={mc.toString()}>
-                  Microciclo {mc}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <p className="text-muted-foreground">No hay microciclos para seleccionar. Ve a Gestión de Metas.</p>
-          )}
-        </CardContent>
-      </Card>
-
-      {selectedWorkoutMicrocycle !== null && !isLoadingGoals && availableCategories.length > 0 && (
-        <Card className="shadow-md mb-6">
-          <CardHeader>
-            <CardTitle className="text-base">Filtrar Ejercicios por Categoría</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">
-                Selecciona una o más categorías. Se mostrarán ejercicios que pertenezcan a CUALQUIERA de las categorías elegidas.
-                Si no seleccionas ninguna, se mostrarán todos los ejercicios activos del microciclo.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {availableCategories.map((category: string) => (
-                  <Button
-                    key={category}
-                    variant={selectedCategoryFilters.includes(category) ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => onCategoryFilterChange(category, !selectedCategoryFilters.includes(category))}
-                    disabled={isLoggingPerformance || isPausingGoal}
-                  >
-                    {category}
-                  </Button>
-                ))}
-              </div>
-              {selectedCategoryFilters.length > 0 && (
-                 <Button variant="link" size="sm" className="p-0 h-auto text-xs mt-2" onClick={() => handleSelectCategoryFilters([])}>
-                    Limpiar filtros de categoría
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {selectedWorkoutMicrocycle !== null && !isLoadingGoals && !error && ( // Don't show if goals still loading
+    <div className="max-w-xl mx-auto p-4 space-y-6 pb-20">
+      {selectedWorkoutMicrocycle !== null && !isLoadingGoals && !error && (
         <div className="space-y-6">
           {currentGoal ? (
             <>
-              <CurrentExerciseDisplay goal={currentGoal} />
-              <PerformanceLogger
-                performanceReps={performanceReps}
-                setPerformanceReps={setPerformanceReps}
-                performanceFailedSet={performanceFailedSet}
-                setPerformanceFailedSet={setPerformanceFailedSet}
-                performanceWeight={performanceWeight}
-                setPerformanceWeight={setPerformanceWeight}
-                performanceDuration={performanceDuration}
-                setPerformanceDuration={setPerformanceDuration}
-                performanceNotes={performanceNotes}
-                setPerformanceNotes={setPerformanceNotes}
-                isSubmitting={isLoggingPerformance || isPausingGoal}
+              <CurrentExerciseDisplay 
+                goal={currentGoal} 
+                onChangeExerciseClick={handleOpenChangeExerciseModal}
+                isProcessingChange={isChangeExerciseModalOpen} 
               />
-              <div className="space-y-3">
-                <Button
-                  onClick={handleLogPerformance}
-                  disabled={isLoggingPerformance || isPausingGoal || !currentGoal}
-                  className="w-full text-lg py-6"
-                >
-                  {isLoggingPerformance ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
-                  Hecho / Registrar Set
-                </Button>
-                <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    onClick={handlePauseCurrentGoal}
-                    variant="outline"
-                    disabled={isLoggingPerformance || isPausingGoal || !currentGoal}
-                    className="w-full"
-                  >
-                    {isPausingGoal ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    Pausar Ejercicio
+              {mostrarFormularioRendimiento && (
+                <PerformanceLogger
+                  goal={currentGoal}
+                  performanceReps={performanceReps} setPerformanceReps={setPerformanceReps}
+                  performanceFailedSet={performanceFailedSet} setPerformanceFailedSet={setPerformanceFailedSet}
+                  performanceWeight={performanceWeight} setPerformanceWeight={setPerformanceWeight}
+                  performanceDuration={performanceDuration} setPerformanceDuration={setPerformanceDuration}
+                  performanceNotes={performanceNotes} setPerformanceNotes={setPerformanceNotes}
+                  isSubmitting={isLoggingPerformance || isPausingGoal}
+                  onLogSubmit={(setLogged: PerformanceLoggerSetData) => { handleLogPerformance(setLogged); }}
+                  onCancel={() => setMostrarFormularioRendimiento(false)}
+                />
+              )}
+              {!mostrarFormularioRendimiento && (
+                <div className="space-y-3">
+                  <Button onClick={() => setMostrarFormularioRendimiento(true)} disabled={isLoggingPerformance || isPausingGoal || !currentGoal} variant="default" size="lg" className="w-full">
+                    Hecho / Registrar Set
                   </Button>
-                  <Button
-                    onClick={selectNextGoal}
-                    variant="secondary"
-                    disabled={isLoggingPerformance || isPausingGoal}
-                    className="w-full"
-                  >
-                    Siguiente / Omitir
-                  </Button>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button onClick={handlePauseCurrentGoal} variant="outline" disabled={isLoggingPerformance || isPausingGoal || !currentGoal} className="w-full">
+                      {isPausingGoal ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}Pausar Ejercicio
+                    </Button>
+                    <Button onClick={selectNextGoal} variant="secondary" disabled={isLoggingPerformance || isPausingGoal || !currentGoal} className="w-full border border-input hover:bg-accent">
+                      Siguiente / Omitir
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              )}
             </>
-          ) : (
-             selectedWorkoutMicrocycle !== null && !isLoadingGoals && ( // Only show this if a microcycle is selected and goals are done loading
+          ) : ( 
+             selectedWorkoutMicrocycle !== null && !isLoadingGoals && ( 
                 <Card className="w-full max-w-lg mx-auto text-center mt-6">
-                <CardHeader><CardTitle>¡Microciclo {selectedWorkoutMicrocycle}!</CardTitle></CardHeader>
+                <CardHeader><CardTitle>¡Workout del Microciclo {selectedWorkoutMicrocycle} Completado!</CardTitle></CardHeader>
                 <CardContent>
-                    {availableCategories.length === 0 && userMicrocycles.length > 0 ? (
-                        <>
-                            <p>No se encontraron ejercicios activos para el Microciclo {selectedWorkoutMicrocycle}.</p>
-                            <p>Añade nuevas metas a este microciclo o selecciona otro.</p>
-                        </>
-                    ) : (
-                        <>
-                            <p>No hay más ejercicios activos para el Microciclo {selectedWorkoutMicrocycle} que coincidan con los filtros seleccionados (o ya los completaste todos).</p>
-                            <p>Prueba a cambiar los filtros de categoría, selecciona otro microciclo o añade nuevas metas.</p>
-                            {selectedCategoryFilters.length > 0 && (
-                                <Button variant="link" onClick={() => handleSelectCategoryFilters([])} className="mt-2">
-                                    Limpiar filtros de categoría
-                                </Button>
-                            )}
-                        </>
+                    <p className="mb-2">No hay más ejercicios activos que coincidan con los filtros seleccionados, o ya los completaste todos.</p>
+                    {selectedCategoryFilters.length > 0 && (
+                        <Button variant="link" onClick={() => handleSelectCategoryFilters([])} className="mt-2">
+                            Limpiar filtros de categoría para ver otros ejercicios
+                        </Button>
                     )}
-                </CardContent>
-                </Card>
+                    <p className="mt-3 text-sm text-muted-foreground">Puedes seleccionar otro microciclo o añadir nuevas metas.</p>
+                </CardContent></Card>
              )
           )}
         </div>
       )}
 
-      {/* Fallback if microcycle selected, but no goals available for it at all (and not loading) */}
-      {selectedWorkoutMicrocycle !== null && !isLoadingGoals && availableCategories.length === 0 && !currentGoal && (
-         <Card className="w-full max-w-lg mx-auto text-center mt-6">
-           <CardHeader><CardTitle>Microciclo {selectedWorkoutMicrocycle} Vacío</CardTitle></CardHeader>
-           <CardContent>
-             <p>No se encontraron ejercicios activos para el Microciclo {selectedWorkoutMicrocycle}.</p>
-             <p>Añade nuevas metas a este microciclo o selecciona otro.</p>
-           </CardContent>
-         </Card>
+      {selectedWorkoutMicrocycle !== null && !isLoadingGoals && availableCategories.length === 0 && !currentGoal && ( <Card className="w-full max-w-lg mx-auto text-center mt-6"><CardHeader><CardTitle>Microciclo {selectedWorkoutMicrocycle} Vacío</CardTitle></CardHeader><CardContent><p>No hay ejercicios.</p></CardContent></Card>)}
+      {selectedWorkoutMicrocycle === null && !isLoadingMicrocycles && userMicrocycles.length > 0 && ( <div className="text-center py-8 mt-6"><p>Selecciona un microciclo.</p>{!controlesVisibles && (<Button onClick={() => setControlesVisibles(true)} className="mt-4">Mostrar Controles</Button>)}</div>)}
+
+      {isChangeExerciseModalOpen && ( 
+        <ChangeExerciseModal
+          isOpen={isChangeExerciseModalOpen}
+          onClose={() => setIsChangeExerciseModalOpen(false)}
+          currentCategoryFilters={selectedCategoryFilters || []}
+          selectedMicrocycle={selectedWorkoutMicrocycle}
+          onExerciseSelected={(selectedExercise: Goal) => {
+            handleChangeCurrentGoal(selectedExercise);
+            setIsChangeExerciseModalOpen(false);
+          }}
+        />
       )}
+
+      {/* --- Bloque de Controles: Restored original structure, with category button styling updated --- */}
+      <div className={`border-t pt-4 mt-8 ${userMicrocycles.length === 0 && !isLoadingMicrocycles ? 'hidden' : ''}`}>
+        <div className="flex justify-center mb-4">
+            <Button variant="ghost" onClick={() => setControlesVisibles(!controlesVisibles)} className="text-sm text-muted-foreground hover:text-foreground">
+            {controlesVisibles ? <ChevronUp className="mr-2 h-4 w-4" /> : <ChevronDown className="mr-2 h-4 w-4" />}
+            {controlesVisibles ? 'Ocultar Controles del Workout' : 'Mostrar Controles del Workout'}
+            </Button>
+        </div>
+
+        {controlesVisibles && (
+            <div className="space-y-6 bg-card p-4 rounded-lg shadow">
+            <div className="p-1"> {/* Microcycle Selector Block Start */}
+              <Label htmlFor="microcycle-selector-trigger" className="text-xs text-muted-foreground">Microciclo Actual</Label>
+              <Dialog open={isMicrocycleModalOpen} onOpenChange={setIsMicrocycleModalOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    id="microcycle-selector-trigger"
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-start text-left font-normal mt-1"
+                    disabled={isLoadingMicrocycles || isLoadingGoals}
+                  >
+                    {selectedWorkoutMicrocycle !== null 
+                      ? `Microciclo ${selectedWorkoutMicrocycle}` 
+                      : (isLoadingMicrocycles && userMicrocycles.length === 0 
+                          ? <span className="flex items-center"><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Cargando...</span> 
+                          : '-- Elige un microciclo --')}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-xs">
+                  <DialogHeader>
+                    <DialogTitle>Seleccionar Microciclo</DialogTitle>
+                  </DialogHeader>
+                  <div className="flex flex-col space-y-1 py-2 max-h-[250px] overflow-y-auto">
+                    {isLoadingMicrocycles && userMicrocycles.length === 0 ? (
+                      <div className="flex items-center justify-center py-4">
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        <p className="text-muted-foreground">Cargando microciclos...</p>
+                      </div>
+                    ) : userMicrocycles.length > 0 ? (
+                      userMicrocycles.map(mc => (
+                        <Button
+                          key={mc}
+                          variant={selectedWorkoutMicrocycle === mc ? "default" : "ghost"} 
+                          onClick={() => {
+                            selectWorkoutMicrocycle(mc); 
+                            setIsMicrocycleModalOpen(false);
+                          }}
+                          className="w-full justify-start h-9 text-sm"
+                        >
+                          Microciclo {mc}
+                        </Button>
+                      ))
+                    ) : (
+                      <p className="text-muted-foreground text-center py-4">No hay microciclos disponibles.</p>
+                    )}
+                  </div>
+                  {userMicrocycles.length > 0 && (
+                    <Button 
+                        variant={"link"}
+                        size="sm"
+                        onClick={() => {
+                            selectWorkoutMicrocycle(null); 
+                            setIsMicrocycleModalOpen(false);
+                        }}
+                        className="w-full justify-center text-xs text-muted-foreground hover:text-destructive mt-2"
+                        >
+                        Limpiar selección de microciclo
+                    </Button>
+                  )}
+                </DialogContent>
+              </Dialog>
+            </div> {/* Microcycle Selector Block End */}
+
+            {selectedWorkoutMicrocycle !== null && !isLoadingGoals && availableCategories.length > 0 && (
+              <div className="p-1"> {/* Category Filter Block Start */}
+                <Label htmlFor="category-filter-trigger" className="text-xs text-muted-foreground">Filtro de Categorías</Label>
+                <Dialog open={isCategoryModalOpen} onOpenChange={setIsCategoryModalOpen}>
+                  <DialogTrigger asChild>
+                    <Button 
+                      id="category-filter-trigger"
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full justify-start text-left font-normal mt-1"
+                      disabled={isLoggingPerformance || isPausingGoal} 
+                    >
+                      {selectedCategoryFilters.length > 0 
+                        ? `${selectedCategoryFilters.length} categorí${selectedCategoryFilters.length === 1 ? 'a' : 'as'} seleccionada${selectedCategoryFilters.length === 1 ? '' : 's'}`
+                        : 'Todas las categorías'}
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Filtrar Ejercicios por Categoría</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-2 space-y-3">
+                      <p className="text-sm text-muted-foreground">
+                        Selecciona una o más categorías. Se mostrarán ejercicios que pertenezcan a CUALQUIERA de las categorías elegidas.
+                        Si no seleccionas ninguna, se mostrarán todos los ejercicios activos del microciclo.
+                      </p>
+                      <div className="flex flex-wrap gap-2 max-h-[200px] overflow-y-auto p-1 rounded-md border">
+                        {availableCategories.map((category: string) => {
+                          const isSelected = selectedCategoryFilters.includes(category);
+                          return (
+                            <Button
+                              key={category}
+                              size="sm"
+                              onClick={() => onCategoryFilterChange(category, !isSelected)}
+                              disabled={isLoggingPerformance || isPausingGoal}
+                              // RE-APPLIED RED/GREEN STYLING
+                              className={`
+                                flex-grow sm:flex-grow-0 px-3 py-1.5 text-xs font-medium rounded-md transition-colors
+                                focus:outline-none focus:ring-2 focus:ring-offset-1
+                                ${isSelected 
+                                  ? 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500' 
+                                  : 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500'
+                                }
+                              `}
+                            >
+                              {category}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                      {selectedCategoryFilters.length > 0 && (
+                        <Button 
+                          variant="link" 
+                          size="sm" 
+                          className="p-0 h-auto text-xs mt-2 w-full justify-center text-muted-foreground hover:text-destructive"
+                          onClick={() => {
+                            handleSelectCategoryFilters([]);
+                          }}
+                        >
+                          Limpiar filtros de categoría
+                        </Button>
+                      )}
+                    </div>
+                    <div className="flex justify-end pt-2 border-t mt-4">
+                        <Button size="sm" onClick={() => setIsCategoryModalOpen(false)}>Hecho</Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div> 
+            )}
+            </div>
+        )}
+      </div> 
     </div>
   );
 };

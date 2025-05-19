@@ -16,7 +16,8 @@ const GoalsManagementPage: React.FC = () => {
     user,
     microcycles,
     selectedMicrocycle,
-    goals,
+    goals, // This is the raw list from the microcycle
+    displayedGoals, // This is the filtered and sorted list for rendering
     isLoadingMicrocycles,
     isLoadingGoals,
     isSubmittingGoal,
@@ -29,6 +30,13 @@ const GoalsManagementPage: React.FC = () => {
     handleUpdateGoal,
     handleDeleteGoal,
     handleToggleActive: handleToggleGoalActive,
+    // Filter and sort related state and handlers
+    availableCategories,
+    selectedCategoryFilters,
+    sortConfig,
+    handleToggleCategoryFilter,
+    handleClearCategoryFilters,
+    handleRequestSort,
     doneExercises,
     isLoadingDoneExercises,
   } = useGoalsManagement();
@@ -180,17 +188,19 @@ const GoalsManagementPage: React.FC = () => {
                 <Loader2 className="h-6 w-6 animate-spin" />
                 <span>Cargando metas del microciclo...</span>
               </div>
-            ) : goals.length === 0 ? (
-              <p className="text-center text-muted-foreground py-10">
-                No hay metas definidas para este microciclo. ¡Añade la primera!
-              </p>
             ) : (
               <GoalList
-                goals={goals}
+                displayedGoals={displayedGoals} // Changed from goals to displayedGoals
                 onEditGoal={openGoalFormForEdit}
                 onDeleteGoal={handleDeleteGoal}
                 onToggleActive={handleToggleGoalActive}
-                isLoading={isSubmittingGoal}
+                isLoading={isSubmittingGoal || isLoadingGoals} // isLoadingGoals might also affect interaction
+                availableCategories={availableCategories}
+                selectedCategoryFilters={selectedCategoryFilters}
+                sortConfig={sortConfig}
+                onToggleCategoryFilter={handleToggleCategoryFilter}
+                onClearCategoryFilters={handleClearCategoryFilters}
+                onRequestSort={handleRequestSort}
               />
             )}
           </CardContent>

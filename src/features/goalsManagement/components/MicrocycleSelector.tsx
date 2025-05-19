@@ -29,7 +29,7 @@ const MicrocycleSelector: React.FC<MicrocycleSelectorProps> = ({
         value={selectedMicrocycle?.toString() ?? ""}
         onChange={(e) => onSelectMicrocycle(e.target.value)}
         disabled={disabled || microcycles.length === 0 || isLoading}
-        className="p-2 border rounded bg-white dark:bg-gray-800 dark:text-white dark:border-gray-600 min-w-[180px]"
+        className="p-2 border rounded bg-white  min-w-[180px]"
       >
         <option value="" disabled={selectedMicrocycle !== null || microcycles.length === 0}>
           {microcycles.length === 0 ? "No hay microciclos" : "Selecciona..."}

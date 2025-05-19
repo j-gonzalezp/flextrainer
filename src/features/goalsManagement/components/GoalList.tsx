@@ -3,23 +3,37 @@ import type { Goal } from '../types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Edit2, Trash2, MoreVertical, Play, Pause } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { Edit2, Trash2, MoreVertical, Play, Pause, ChevronUp, ChevronDown, ChevronsUpDown, Filter } from 'lucide-react';
+
+import type { SortableGoalKeys } from '../types';
 
 interface GoalListProps {
-  goals: Goal[];
+  displayedGoals: Goal[];
   onEditGoal: (goal: Goal) => void;
   onDeleteGoal: (goalId: number) => void;
   onToggleActive: (goalId: number, currentState: Goal['active']) => void;
   isLoading?: boolean;
+  availableCategories: string[];
+  selectedCategoryFilters: string[];
+  sortConfig: { key: SortableGoalKeys; direction: 'asc' | 'desc' } | null;
+  onToggleCategoryFilter: (category: string) => void;
+  onClearCategoryFilters: () => void;
+  onRequestSort: (key: SortableGoalKeys) => void;
 }
 
 const GoalList: React.FC<GoalListProps> = ({
-  goals,
+  displayedGoals,
   onEditGoal,
   onDeleteGoal,
   onToggleActive,
-  isLoading = false
+  isLoading = false,
+  availableCategories,
+  selectedCategoryFilters,
+  sortConfig,
+  onToggleCategoryFilter,
+  onClearCategoryFilters,
+  onRequestSort
 }) => {
   // Función auxiliar para garantizar que pasemos el estado actual
   const handleToggleActive = (goalId: number, currentState: Goal['active']) => {
@@ -27,32 +41,92 @@ const GoalList: React.FC<GoalListProps> = ({
     onToggleActive(goalId, currentState);
     
     // Para debugging
+    // Updated log to more accurately reflect the toggle logic used in the hook
     console.log(`Toggling goal ${goalId} from ${currentState} to ${currentState === 1 ? 0 : 1}`);
   };
 
-  if (goals.length === 0) {
-    return null;
+  // Helper to render sort icons
+  const renderSortIcon = (columnKey: SortableGoalKeys) => {
+    if (sortConfig?.key === columnKey) {
+      return sortConfig.direction === 'asc' ? <ChevronUp className="inline ml-1 h-4 w-4" /> : <ChevronDown className="inline ml-1 h-4 w-4" />;
+    }
+    // Apply group-hover effect to ChevronsUpDown as well
+    return <ChevronsUpDown className="inline ml-1 h-4 w-4 opacity-30 group-hover:opacity-100 transition-opacity" />;
+  };
+
+  if (displayedGoals.length === 0 && selectedCategoryFilters.length === 0) {
+    // Show 'no goals' message only if no filters are applied resulting in an empty list
+    // If filters are applied and the list is empty, it's an expected outcome of filtering
+    return <p className="text-center text-muted-foreground py-10">No hay metas definidas para este microciclo. ¡Añade la primera!</p>;
+  }
+
+  if (displayedGoals.length === 0 && selectedCategoryFilters.length > 0) {
+    return <p className="text-center text-muted-foreground py-10">Ninguna meta coincide con los filtros de categoría seleccionados.</p>;
   }
 
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Ejercicio</TableHead>
-          <TableHead className="text-center">Sets</TableHead>
-          <TableHead className="text-center">Reps</TableHead>
-          <TableHead className="text-center">Peso</TableHead>
-          <TableHead className="text-center">Duración</TableHead>
-          <TableHead>Categorías</TableHead>
-          <TableHead className="text-center">Estado</TableHead>
+          <TableHead onClick={() => onRequestSort('exercise_name')} className="cursor-pointer hover:bg-muted/50 group"><span className='sr-only'>Ordenar por </span>Ejercicio{renderSortIcon('exercise_name')}</TableHead>
+          <TableHead onClick={() => onRequestSort('sets')} className="text-center cursor-pointer hover:bg-muted/50 group"><span className='sr-only'>Ordenar por </span>Sets Totales{renderSortIcon('sets')}</TableHead>
+          <TableHead onClick={() => onRequestSort('completedSetsCount')} className="text-center cursor-pointer hover:bg-muted/50 group"><span className='sr-only'>Ordenar por </span>Sets Realizados{renderSortIcon('completedSetsCount')}</TableHead>
+          <TableHead onClick={() => onRequestSort('reps')} className="text-center cursor-pointer hover:bg-muted/50 group"><span className='sr-only'>Ordenar por </span>Reps{renderSortIcon('reps')}</TableHead>
+          <TableHead onClick={() => onRequestSort('weight')} className="text-center cursor-pointer hover:bg-muted/50 group"><span className='sr-only'>Ordenar por </span>Peso{renderSortIcon('weight')}</TableHead>
+          <TableHead onClick={() => onRequestSort('duration_seconds')} className="text-center cursor-pointer hover:bg-muted/50 group"><span className='sr-only'>Ordenar por </span>Duración{renderSortIcon('duration_seconds')}</TableHead>
+          <TableHead className="text-left">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="p-0 h-auto hover:bg-transparent font-semibold group" disabled={isLoading || availableCategories.length === 0}>
+                  <span className='sr-only'>Filtrar por </span>Categorías
+                  {selectedCategoryFilters.length > 0 ? 
+                    <Filter className="inline ml-1 h-3 w-3 text-blue-500" /> : 
+                    <ChevronsUpDown className="inline ml-1 h-4 w-4 opacity-30 group-hover:opacity-100 transition-opacity" />
+                  }
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" onCloseAutoFocus={(e) => e.preventDefault()}>
+                <DropdownMenuLabel>Filtrar por Categoría</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {availableCategories.length > 0 ? (
+                  availableCategories.map((category) => (
+                    <DropdownMenuCheckboxItem
+                      key={category}
+                      checked={selectedCategoryFilters.includes(category)}
+                      onCheckedChange={() => onToggleCategoryFilter(category)}
+                      disabled={isLoading}
+                    >
+                      {category}
+                    </DropdownMenuCheckboxItem>
+                  ))
+                ) : (
+                  <DropdownMenuItem disabled>No hay categorías disponibles</DropdownMenuItem>
+                )}
+                {availableCategories.length > 0 && selectedCategoryFilters.length > 0 && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={onClearCategoryFilters}
+                      className="text-destructive focus:text-destructive-foreground focus:bg-destructive"
+                      disabled={isLoading}
+                    >
+                      Limpiar todos los filtros
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </TableHead>
+          <TableHead onClick={() => onRequestSort('active')} className="text-center cursor-pointer hover:bg-muted/50 group"><span className='sr-only'>Ordenar por </span>Estado{renderSortIcon('active')}</TableHead>
           <TableHead className="text-right">Acciones</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {goals.map((goal) => (
+        {displayedGoals.map((goal) => (
           <TableRow key={goal.id} className="hover:bg-muted/50">
             <TableCell className="font-medium">{goal.exercise_name}</TableCell>
             <TableCell className="text-center">{goal.sets}</TableCell>
+            <TableCell className="text-center">{goal.completedSetsCount}</TableCell>
             <TableCell className="text-center">{goal.reps}</TableCell>
             <TableCell className="text-center">{goal.weight !== null && goal.weight !== undefined ? `${goal.weight} kg` : '-'}</TableCell>
             <TableCell className="text-center">{goal.duration_seconds !== null && goal.duration_seconds !== undefined ? `${goal.duration_seconds}s` : '-'}</TableCell>

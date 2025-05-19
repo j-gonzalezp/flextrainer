@@ -9,7 +9,6 @@ export const fetchMicrocyclesForUser = async (userId: string): Promise<number[]>
     .eq('user_id', userId)
     .order('microcycle', { ascending: true });
 
-
   if (error) {
     console.error('[goalService] fetchMicrocyclesForUser: Supabase error:', error);
     throw error;
@@ -35,16 +34,67 @@ export const fetchGoalsForMicrocycle = async (userId: string, microcycleNumber: 
     throw error;
   }
 
-
-  return data || [];
+  if (!data) return [];
+  const processedData = data.map(goal => (
+    {
+      ...goal,
+      active: goal.active ? 1 : 0 // Normalize to 0 or 1
+    }
+  ));
+  return processedData;
 };
+
+// --- REVISED FUNCTION TO FETCH ACTIVE GOALS (EXERCISES) FOR A USER, FILTERED BY MICROCICLE ---
+/**
+ * Fetches all active goals (exercises) for a given user.
+ * Optionally filters by microcycle if microcycleNumber is provided.
+ */
+export const fetchAllActiveUserGoals = async (userId: string, microcycleNumber: number | null): Promise<Goal[]> => {
+  console.log(`[goalService] fetchAllActiveUserGoals: Calling Supabase for userId: ${userId}, microcycle: ${microcycleNumber}`);
+  
+  let query = supabase
+    .from('goals')
+    .select('*') 
+    .eq('user_id', userId)
+    .eq('active', 1);
+
+  if (microcycleNumber !== null) {
+    query = query.eq('microcycle', microcycleNumber);
+    console.log(`[goalService] fetchAllActiveUserGoals: Filtering by microcycle ${microcycleNumber}`);
+  } else {
+    // This case might not be hit if WorkoutPage always has a selected microcycle
+    // when calling this for the modal. If it can be hit, this log is useful.
+    console.warn('[goalService] fetchAllActiveUserGoals: microcycleNumber is null, fetching all active goals for user across all microcycles.');
+  }
+  
+  query = query.order('exercise_name', { ascending: true });
+
+  const { data, error } = await query;
+
+  console.log('[goalService] fetchAllActiveUserGoals: Supabase response - Data:', data, 'Error:', error);
+
+  if (error) {
+    console.error(`[goalService] Error fetching active goals for user ${userId}:`, error.message);
+    throw error;
+  }
+
+  if (!data) return [];
+  const processedData = data.map(goal => (
+    {
+      ...goal,
+      active: goal.active ? 1 : 0, 
+      categories: goal.categories || [], 
+    }
+  ));
+  return processedData;
+};
+// --- END REVISED FUNCTION ---
 
 export const createGoal = async (goalData: GoalInsert, userId: string): Promise<Goal | null> => {
   const goalToInsert = {
     ...goalData,
     user_id: userId,
     active: goalData.active ?? 1,
-
   };
   console.log('[goalService] createGoal: Calling Supabase with goalToInsert:', goalToInsert);
 
@@ -60,9 +110,11 @@ export const createGoal = async (goalData: GoalInsert, userId: string): Promise<
     throw error;
   }
 
-  return data;
+  if (data) {
+    return { ...data, active: data.active ? 1 : 0 };
+  }
+  return null;
 };
-
 
 export const updateGoal = async (goalId: number, goalData: GoalUpdate): Promise<Goal | null> => {
   console.log('[goalService] updateGoal: Calling Supabase with goalId:', goalId, 'goalData:', goalData);
@@ -79,7 +131,10 @@ export const updateGoal = async (goalId: number, goalData: GoalUpdate): Promise<
     throw error;
   }
 
-  return data;
+  if (data) {
+    return { ...data, active: data.active ? 1 : 0 };
+  }
+  return null;
 };
 
 export const deleteGoal = async (goalId: number): Promise<boolean> => {
@@ -96,7 +151,7 @@ export const deleteGoal = async (goalId: number): Promise<boolean> => {
   return !error;
 };
 
-export const toggleGoalActiveState = async (goalId: number, newActiveState: 0 | 1): Promise<Goal | null> => { // currentState renamed to newActiveState for clarity
+export const toggleGoalActiveState = async (goalId: number, newActiveState: 0 | 1): Promise<Goal | null> => {
   console.log('[goalService] toggleGoalActiveState: Calling Supabase with goalId:', goalId, 'setting active to:', newActiveState);
   const { data, error } = await supabase
     .from('goals')
@@ -110,7 +165,10 @@ export const toggleGoalActiveState = async (goalId: number, newActiveState: 0 | 
     throw error;
   }
 
-  return data;
+  if (data) {
+    return { ...data, active: data.active ? 1 : 0 };
+  }
+  return null;
 };
 
 export const createNextMicrocycle = async (userId: string, currentMaxMicrocycle: number): Promise<Goal[]> => {
@@ -124,7 +182,6 @@ export const createNextMicrocycle = async (userId: string, currentMaxMicrocycle:
     .eq('active', 1);
   console.log('[goalService] createNextMicrocycle: Fetch active goals for duplication - Supabase call with userId:', userId, 'currentMaxMicrocycle:', currentMaxMicrocycle);
 
-
   console.log('[goalService] createNextMicrocycle: Fetch active goals response - Data:', activeGoals, 'Error:', fetchError);
   if (fetchError) {
     console.error('Error fetching active goals for duplication:', fetchError.message);
@@ -132,7 +189,6 @@ export const createNextMicrocycle = async (userId: string, currentMaxMicrocycle:
   }
 
   if (!activeGoals || activeGoals.length === 0) {
-
     console.log('[goalService] createNextMicrocycle: No active goals found to duplicate. Creating minimal goal for new microcycle.');
     const newMicrocycleNumber = currentMaxMicrocycle + 1;
     const minimalGoalToInsert = {
@@ -140,7 +196,6 @@ export const createNextMicrocycle = async (userId: string, currentMaxMicrocycle:
       microcycle: newMicrocycleNumber,
       exercise_name: `Microciclo ${newMicrocycleNumber} - Placeholder`,
       active: 1,
-
     };
 
     const { data: minimalGoal, error: minimalInsertError } = await supabase
@@ -153,11 +208,8 @@ export const createNextMicrocycle = async (userId: string, currentMaxMicrocycle:
       console.error('Error inserting minimal goal for new microcycle:', minimalInsertError.message);
       throw minimalInsertError;
     }
-
-
-    return minimalGoal ? [minimalGoal] : [];
+    return minimalGoal ? [{ ...minimalGoal, active: minimalGoal.active ? 1 : 0 } as Goal] : [];
   }
-
 
   const newMicrocycleNumber = currentMaxMicrocycle + 1;
   const goalsToInsert: GoalInsert[] = activeGoals.map(goal => {
@@ -165,13 +217,9 @@ export const createNextMicrocycle = async (userId: string, currentMaxMicrocycle:
     return {
       ...rest,
       microcycle: newMicrocycleNumber,
-
-
       active: 1,
-
     };
   });
-
 
   console.log('[goalService] createNextMicrocycle: Inserting new goals - goalsToInsert:', goalsToInsert);
   const { data: newGoals, error: insertError } = await supabase
@@ -185,8 +233,7 @@ export const createNextMicrocycle = async (userId: string, currentMaxMicrocycle:
     throw insertError;
   }
 
-
-  return newGoals || [];
+  return (newGoals || []).map(g => ({...g, active: g.active ? 1 : 0} as Goal));
 };
 
 export const fetchDoneExercisesForMicrocycle = async (userId: string, microcycleNumber: number): Promise<DisplayableDoneExercise[]> => {
@@ -206,19 +253,16 @@ export const fetchDoneExercisesForMicrocycle = async (userId: string, microcycle
     throw error;
   }
 
-
   const processedData: DisplayableDoneExercise[] = data ? data.map(log => {
     const logWithGoalName = log as any;
     return {
       ...logWithGoalName,
       exercise_name: logWithGoalName.goals?.exercise_name || 'Nombre desconocido',
-
       goals: undefined,
     };
   }) : [];
 
   console.log(`[goalService] fetchDoneExercisesForMicrocycle: Processed data:`, processedData);
-
   return processedData;
 };
 
@@ -234,8 +278,7 @@ export const fetchUserMaxMicrocycle = async (userId: string): Promise<number | n
 
   console.log('[goalService] fetchUserMaxMicrocycle: Supabase response - Data:', data, 'Error:', error);
 
-
-  if (error && error.code !== 'PGRST116') {
+  if (error && error.code !== 'PGRST116') { // PGRST116: Row not found, which is fine for limit(1).single()
     console.error('[goalService] Error fetching max microcycle:', error.message);
     throw error;
   }

@@ -14,6 +14,7 @@ export interface Goal {
   duration_seconds?: number | null;
   created_at: string;
   updated_at: string;
+  completedSetsCount?: number; // Added for displaying completed sets
 }
 
 export type GoalInsert = Omit<Goal, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'active'> & {
@@ -27,3 +28,7 @@ export type GoalUpdate = Partial<Omit<Goal, 'id' | 'user_id' | 'created_at' | 'u
 export interface DisplayableDoneExercise extends DoneExerciseLog {
   exercise_name: string;
 }
+
+
+// Defines the keys of the Goal object that are eligible for sorting
+export type SortableGoalKeys = 'exercise_name' | 'sets' | 'reps' | 'weight' | 'duration_seconds' | 'active' | 'created_at' | 'completedSetsCount';
