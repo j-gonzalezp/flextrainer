@@ -91,7 +91,7 @@ const GoalsManagementPage: React.FC = () => {
         <p className="text-sm sm:text-base text-muted-foreground mt-1">Organiza y planifica tus objetivos de entrenamiento por microciclos.</p>
       </header>
 
-      <Card shadow-elevated>
+      <Card className="shadow-elevated">
         <CardHeader>
           <CardTitle>Selector de Microciclos</CardTitle>
           <ShadcnCardDescription>
@@ -131,7 +131,7 @@ const GoalsManagementPage: React.FC = () => {
       </Card>
 
       {selectedMicrocycle !== null && (
-        <Card shadow-elevated>
+        <Card className="shadow-elevated">
           <CardHeader>
             <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 sm:gap-4">
               <div>

@@ -3,6 +3,7 @@ import { Link, NavLink } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { signOutUser } from '@/features/authentication/services/authService';
+import { Dumbbell, Target } from 'lucide-react';
 
 
 const Navbar: React.FC = () => {
@@ -32,31 +33,39 @@ const Navbar: React.FC = () => {
               TrainingApp
             </Link>
           </div>
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-4">
             <NavLink
               to="/"
               end
               className={({ isActive }) =>
-                `px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                `p-2 sm:p-3 rounded-md transition-colors ${
                   isActive
                     ? 'bg-primary text-primary-foreground navlink-subtle-active'
                     : 'text-muted-foreground hover:text-primary hover:bg-accent'
                 }`
               }
+              title="Workout"
             >
-              Workout
+              <div className="flex items-center space-x-2">
+                <Dumbbell className="h-5 w-5" />
+                <span className="hidden md:inline text-sm font-medium">Workout</span>
+              </div>
             </NavLink>
             <NavLink
               to="/goals"
               className={({ isActive }) =>
-                `px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                `p-2 sm:p-3 rounded-md transition-colors ${
                   isActive
                     ? 'bg-primary text-primary-foreground navlink-subtle-active'
                     : 'text-muted-foreground hover:text-primary hover:bg-accent'
                 }`
               }
+              title="Metas"
             >
-              Metas
+              <div className="flex items-center space-x-2">
+                <Target className="h-5 w-5" />
+                <span className="hidden md:inline text-sm font-medium">Metas</span>
+              </div>
             </NavLink>
           </div>
           <div className="flex items-center">
