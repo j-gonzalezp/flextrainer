@@ -7,19 +7,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from "@/components/ui/button";
 import { Loader2 } from 'lucide-react';
 
-// Interface for SetData (can be imported if moved to a shared types file)
 export interface SetData {
   reps: string;
   weight?: string;
   duration?: string;
   notes?: string;
   failed: boolean;
-  isAdditional: boolean; // Will always be false for sets logged by this component now
+  isAdditional: boolean;
 }
 
 interface PerformanceLoggerProps {
-  goal: { exercise_name?: string } | null; // For displaying exercise name
-  onLogSubmit: (set: SetData) => void; // MODIFIED: Expects a single SetData object
+  goal: { exercise_name?: string } | null;
+  onLogSubmit: (set: SetData) => void;
   onCancel: () => void;
   performanceReps: string;
   setPerformanceReps: (value: string) => void;
@@ -50,9 +49,6 @@ const PerformanceLogger: React.FC<PerformanceLoggerProps> = ({
   setPerformanceNotes,
   isSubmitting,
 }) => {
-  // All state and effects related to "Additional Sets" and internal pre-filling are removed.
-  // This component now relies on props being pre-filled by useWorkoutSession.
-
   const handleSubmit = () => {
     const currentSetData: SetData = {
       reps: performanceReps,
@@ -60,22 +56,22 @@ const PerformanceLogger: React.FC<PerformanceLoggerProps> = ({
       duration: performanceDuration,
       notes: performanceNotes,
       failed: performanceFailedSet,
-      isAdditional: false, // This set is the primary (and only) set from this logger
+      isAdditional: false,
     };
     onLogSubmit(currentSetData);
   };
 
   return (
-    <Card className="shadow-lg border-primary/20"> {/* Added a subtle border */}
+    <Card className="shadow-elevated border-primary/20 animate-fade-in-up"> {/* Added a subtle border */}
       <CardHeader>
         <CardTitle className="text-xl">
           Registrar Set: {goal?.exercise_name || 'Ejercicio Actual'}
         </CardTitle>
         <CardDescription>Anota los detalles del set que realizaste.</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-1">
+      <CardContent className="space-y-4.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4.5">
+          <div className="space-y-1.5">
             <Label htmlFor="repsDone" className="text-sm font-medium">Reps Realizadas*</Label>
             <Input 
               id="repsDone" 
@@ -88,7 +84,7 @@ const PerformanceLogger: React.FC<PerformanceLoggerProps> = ({
               aria-required="true"
             />
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label htmlFor="weightUsed" className="text-sm font-medium">Peso Utilizado (kg)</Label>
             <Input 
               id="weightUsed" 
@@ -101,7 +97,7 @@ const PerformanceLogger: React.FC<PerformanceLoggerProps> = ({
             />
           </div>
         </div>
-        <div className="space-y-1">
+        <div className="space-y-1.5">
           <Label htmlFor="durationSecondsDone" className="text-sm font-medium">Duración (segundos)</Label>
           <Input 
             id="durationSecondsDone" 
@@ -112,7 +108,7 @@ const PerformanceLogger: React.FC<PerformanceLoggerProps> = ({
             disabled={isSubmitting} 
           />
         </div>
-        <div className="space-y-1">
+        <div className="space-y-1.5">
           <Label htmlFor="performanceNotes" className="text-sm font-medium">Notas del Set</Label>
           <Textarea 
             id="performanceNotes" 
@@ -123,7 +119,7 @@ const PerformanceLogger: React.FC<PerformanceLoggerProps> = ({
             rows={2} 
           />
         </div>
-        <div className="flex items-center space-x-2 pt-2">
+        <div className="flex items-center space-x-2 pt-3.5">
           <Checkbox 
             id="failedSet" 
             checked={performanceFailedSet} 
@@ -143,14 +139,14 @@ const PerformanceLogger: React.FC<PerformanceLoggerProps> = ({
             variant="outline" 
             onClick={onCancel}
             disabled={isSubmitting}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto btn-outline-custom"
           >
             Cancelar
           </Button>
           <Button 
             onClick={handleSubmit} 
             disabled={isSubmitting || !performanceReps} // Reps are mandatory
-            className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground border" // Emphasize primary action
+            className="w-full sm:w-auto btn-primary-custom"
           >
             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null} 
             Registrar Set

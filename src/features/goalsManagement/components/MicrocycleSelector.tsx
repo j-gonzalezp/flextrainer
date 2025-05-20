@@ -22,7 +22,7 @@ const MicrocycleSelector: React.FC<MicrocycleSelectorProps> = ({
 
 
   return (
-    <div className="flex items-center space-x-2">
+    <div className="flex items-center space-x-3.5">
       <label htmlFor="microcycle-select" className="mr-2 whitespace-nowrap">Selecciona Microciclo:</label>
       <select
         id="microcycle-select"

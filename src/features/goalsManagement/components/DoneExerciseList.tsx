@@ -19,9 +19,8 @@ const DoneExerciseList: React.FC<DoneExerciseListProps> = ({
     return null;
   }
 
-
   if (isLoading && doneExercises.length === 0) {
-     return (
+    return (
       <div className="flex items-center justify-center space-x-2 text-muted-foreground py-10">
         <Loader2 className="h-6 w-6 animate-spin" />
         <span>Cargando ejercicios completados...</span>
@@ -30,7 +29,7 @@ const DoneExerciseList: React.FC<DoneExerciseListProps> = ({
   }
 
   return (
-    <Table>
+    <Table className="animate-fade-in-up">
       <TableCaption>Ejercicios completados para este microciclo.</TableCaption>
       <TableHeader>
         <TableRow>

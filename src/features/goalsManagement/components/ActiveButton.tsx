@@ -1,28 +1,22 @@
 import React from 'react';
-
+import { Button } from '@/components/ui/button';
 
 interface ActiveButtonProps {
   isActive: boolean;
   onClick: () => void;
-
 }
 
 const ActiveButton: React.FC<ActiveButtonProps> = ({ isActive, onClick }) => {
 
   return (
-    <button
+    <Button
       onClick={onClick}
-      style={{
-        backgroundColor: isActive ? 'green' : 'red',
-        color: 'white',
-        padding: '5px 10px',
-        border: 'none',
-        borderRadius: '5px',
-        cursor: 'pointer',
-      }}
+      variant="default" /* Use default variant as a base */
+      size="sm" /* Adjust size if needed */
+      className={isActive ? 'bg-brand-success hover:bg-brand-success/90 text-white' : 'bg-brand-error hover:bg-brand-error/90 text-white'}
     >
-      {isActive ? 'Active' : 'Paused'}
-    </button>
+      {isActive ? 'Activa' : 'Pausada'}
+    </Button>
   );
 };
 

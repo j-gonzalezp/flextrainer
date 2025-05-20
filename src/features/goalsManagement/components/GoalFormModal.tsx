@@ -64,7 +64,7 @@ const GoalFormModal: React.FC<GoalFormModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[480px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[480px] max-h-[90vh] overflow-y-auto animate-fade-in-up">
         <DialogHeader>
           <DialogTitle>{editingGoal ? 'Editar Meta' : 'Añadir Nueva Meta'}</DialogTitle>
           {editingGoal && (
@@ -73,7 +73,7 @@ const GoalFormModal: React.FC<GoalFormModalProps> = ({
             </DialogDescription>
           )}
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-2">
+        <form onSubmit={handleSubmit} className="space-y-4.5 py-2">
           <div>
             <Label htmlFor="exercise_name">Nombre del Ejercicio</Label>
             <Input
@@ -86,7 +86,7 @@ const GoalFormModal: React.FC<GoalFormModalProps> = ({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4.5">
             <div>
               <Label htmlFor="sets">Series</Label>
               <Input
@@ -111,7 +111,7 @@ const GoalFormModal: React.FC<GoalFormModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4.5">
             <div>
               <Label htmlFor="weight">Peso (kg)</Label>
               <Input
@@ -182,10 +182,10 @@ const GoalFormModal: React.FC<GoalFormModalProps> = ({
           {error && <p className="text-sm text-red-500 bg-red-100 p-2 rounded-md">{error}</p>}
 
           <DialogFooter className="pt-4">
-            <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
+            <Button type="button" variant="outline" onClick={onClose} disabled={isLoading} className="btn-outline-custom">
               Cancelar
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading} variant="default" className="btn-primary-custom">
               {isLoading ? (editingGoal ? 'Guardando...' : 'Añadiendo...') : (editingGoal ? 'Guardar Cambios' : 'Añadir Meta')}\n            </Button>
           </DialogFooter>
         </form>

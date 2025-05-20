@@ -1,87 +1,245 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&display=swap');
+
 @import "tailwindcss";
 
-/* Definición de variables CSS para theming (compatible con shadcn/ui) */
-@layer base {
-  :root {
-    --background: 0 0% 100%; /* Blanco */
-    --foreground: 240 10% 3.9%; /* Casi Negro */
+@custom-variant dark (&:where(.dark, .dark *));
 
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-
-    --primary: 240 5.9% 10%; /* Azul Oscuro / Negro Azulado */
-    --primary-foreground: 0 0% 98%; /* Casi Blanco */
-
-    --secondary: 240 4.8% 95.9%; /* Gris Claro */
-    --secondary-foreground: 240 5.9% 10%;
-
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-
-    --destructive: 0 84.2% 60.2%; /* Rojo */
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%; /* Para focus rings */
-
-    --radius: 0.5rem; /* Radio de borde para componentes como Card, Button, Input */
+@theme {
+  @keyframes fade-in-up {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse-subtle {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.85; }
   }
 
-  .dark {
-    --background: 240 10% 3.9%; /* Casi Negro */
-    --foreground: 0 0% 98%; /* Casi Blanco */
+  --ease-custom: cubic-bezier(0.19, 1, 0.22, 1);
+  --duration-default: 280ms;
 
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
+  /* Core Semantic Colors (OKLCH format preferido o HSL) */
+  --color-primary: oklch(62.8% 0.277 21.1); /* ~hsl(21 100% 54%) */
+  --color-primary-foreground: oklch(98.04% 0 0); /* ~hsl(0 0% 98%) */
+  --color-secondary: oklch(69.12% 0.253 230.53); /* ~hsl(187 83% 50%) */
+  --color-secondary-foreground: oklch(98.04% 0 0); /* ~hsl(0 0% 98%) */
+  --color-accent: oklch(76.08% 0.258 76.51); /* ~hsl(38 100% 47%) */
+  --color-accent-foreground: oklch(28.43% 0.045 261.57); /* ~hsl(217 32% 15%) */
+  --color-success: oklch(71.36% 0.131 159.06); /* ~hsl(157 57% 56%) */
+  --color-warning: oklch(80.4% 0.207 77.26); /* ~hsl(37 100% 63%) */
+  --color-destructive: oklch(61.39% 0.268 14.24); /* ~hsl(359 100% 70%) */
+  --color-background: oklch(96.45% 0.021 79.63); /* ~hsl(30 20% 98%) */
+  --color-foreground: oklch(29.6% 0.043 70.86); /* ~hsl(24 32% 15%) */
+  --color-muted: oklch(91.58% 0.011 78.47); /* ~hsl(27 10% 92%) */
+  --color-muted-foreground: oklch(41.32% 0.018 68.55); /* ~hsl(25 12% 40%) */
+  --color-card: oklch(100% 0 0); /* ~hsl(0 0% 100%) */
+  --color-card-foreground: oklch(29.6% 0.043 70.86); /* ~hsl(24 32% 15%) */
+  --color-popover: oklch(100% 0 0); /* ~hsl(0 0% 100%) */
+  --color-popover-foreground: oklch(29.6% 0.043 70.86); /* ~hsl(24 32% 15%) */
+  --color-border: oklch(91.58% 0.011 78.47); /* ~hsl(27 10% 92%) */
+  --color-input: oklch(91.58% 0.011 78.47); /* ~hsl(27 10% 92%) */
+  --color-ring: oklch(62.8% 0.277 21.1); /* ~hsl(21 100% 54%) */
 
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
+  /* Dark Mode Colors */
+  --color-primary.dark: oklch(68.06% 0.251 26.24); /* ~hsl(18 100% 60%) */
+  --color-primary-foreground.dark: oklch(21.58% 0.005 282.91); /* ~hsl(240 5.9% 10%) */
+  --color-secondary.dark: oklch(65.37% 0.193 259.66); /* ~hsl(217 71% 58%) */
+  --color-accent.dark: oklch(36.21% 0.035 264.17); /* ~hsl(215 27% 25%) */
+  --color-destructive.dark: oklch(46.02% 0.226 15.35); /* ~hsl(0 62.8% 30.6%) */
+  --color-background.dark: oklch(25.1% 0.032 267.27); /* ~hsl(222 47% 11%) */
+  --color-foreground.dark: oklch(98.04% 0 0); /* ~hsl(0 0% 98%) */
+  --color-card.dark: oklch(36.21% 0.035 264.17); /* ~hsl(215 27% 25%) */
+  --color-card-foreground.dark: oklch(98.04% 0 0);
+  --color-popover.dark: oklch(28.43% 0.045 261.57); /* ~hsl(217 32% 15%) */
+  --color-popover-foreground.dark: oklch(98.04% 0 0);
+  --color-muted.dark: oklch(36.21% 0.035 264.17); /* ~hsl(215 27% 25%) */
+  --color-muted-foreground.dark: oklch(67.03% 0.016 265.6); /* ~hsl(215 14% 65%) */
+  --color-border.dark: oklch(36.21% 0.035 264.17); /* ~hsl(215 27% 25%) */
+  --color-input.dark: oklch(36.21% 0.035 264.17); /* ~hsl(215 27% 25%) */
+  --color-ring.dark: oklch(98.04% 0 0); /* ~hsl(0 0% 98%) */
 
-    --primary: 0 0% 98%; /* Casi Blanco */
-    --primary-foreground: 240 5.9% 10%; /* Azul Oscuro / Negro Azulado */
-    
-    --secondary: 240 3.7% 15.9%; /* Gris Oscuro */
-    --secondary-foreground: 0 0% 98%;
+  /* Brand Colors (Tailwind generará text-brand-orange, bg-brand-orange, etc.) */
+  --color-brand-orange: #FF6B35;
+  --color-brand-turquoise: #1ECBE1;
+  --color-brand-success: #4ED1A1;
+  --color-brand-warning: #FFB344;
+  --color-brand-error: #FF686B;
+  /* Para el borde específico de brand-warning que era diferente */
+  --color-brand-warning-border: #FF686B;
 
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
 
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
+  /* Fonts */
+  --font-sans: 'Inter', sans-serif;
+  --font-heading: 'Clash Display', sans-serif;
+  --font-accent: 'Space Grotesk', monospace;
 
-    --destructive: 0 62.8% 30.6%; /* Rojo Oscuro */
-    --destructive-foreground: 0 0% 98%;
+  /* Spacing */
+  --spacing-1_5: 6px;
+  --spacing-3_5: 14px;
+  --spacing-4_5: 18px;
+  --spacing-5_5: 22px;
 
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 0 0% 98%; /* Para focus rings en modo oscuro */
-  }
+  /* Radii */
+  --radius: 0.5rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+
+  /* Shadows */
+  --shadow-card-custom: 2px 3px 10px -2px rgba(0, 0, 0, 0.1);
+  --shadow-elevated: 3px 4px 12px -1px rgba(0, 0, 0, 0.12);
+  /* Tailwind incluye shadow-xs, sm, md, lg, xl, 2xl por defecto. Si estos son adicionales, está bien. */
+
+  /* Border Widths */
+  --border-width-3: 3px;
+  /* Tailwind incluye border-width-0, 1(default), 2, 4, 8. Si 3 es específico, está bien. */
+
+  /* Animations */
+  --animate-fade-in-up: fade-in-up var(--duration-default) var(--ease-custom);
+  --animate-pulse-subtle: pulse-subtle 2s var(--ease-custom) infinite;
 }
 
 @layer base {
-  * {
-    /* La utilidad 'border-border' requiere que 'border' esté definido como color en tailwind.config.js.
-       Si esa configuración no está, @apply fallará.
-       Los componentes de shadcn/ui usualmente aplican la clase 'border' donde se necesita,
-       la cual usará la variable --border si el tema de Tailwind está configurado.
-       Eliminando @apply global para evitar error de compilación si la config no está 100%.
-       borderColor: hsl(var(--border)); /* Alternativa directa, pero menos idiomática que la config de Tailwind */
-    */
-    box-sizing: border-box; /* Un buen default global */
-  }
   body {
-    /* @apply bg-background text-foreground; */ /* Aplicando directamente para evitar error si la config no está */
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
-    font-feature-settings: "rlig" 1, "calt" 1; /* Ligaduras opcionales */
-    /* Adding a transition for smoother theme changes */
-    @apply transition-colors duration-300 ease-in-out;
+    font-family: var(--font-sans);
+    font-feature-settings: "rlig" 1, "calt" 1;
+    background-color: hsl(var(--color-background));
+    color: hsl(var(--color-foreground));
+    transition-property: background-color, color;
+    transition-duration: var(--duration-default);
+    transition-timing-function: var(--ease-custom);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+     font-family: var(--font-heading);
+  }
+}
+
+@layer components {
+  .btn-primary-custom {
+    @apply bg-primary text-primary-foreground shadow-xs relative overflow-hidden;
+    /* --shadow-xs debe ser una utilidad de Tailwind o definida en @theme */
+    /* Para el shadow-xs por defecto de Tailwind: shadow-xs */
+    transition-property: background-color, box-shadow, transform; /* Ser más específico */
+    transition-duration: var(--duration-default);
+    transition-timing-function: var(--ease-custom);
+  }
+
+  .btn-primary-custom:hover {
+    /* Para el hover, es mejor definir un color hover o usar utilidades de Tailwind */
+    /* Ej: @apply hover:bg-primary-hover; (definiendo --color-primary-hover en @theme) */
+    /* O un simple filter */
+    filter: brightness(1.1); /* Ajusta el brillo */
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .btn-primary-custom:active {
+    transform: scale(0.98);
+  }
+
+  .btn-primary-custom::after {
+    content: '';
+    @apply absolute bottom-0 left-0 w-full h-[2px] bg-secondary scale-x-0 origin-bottom-right;
+    transition: transform var(--duration-default) var(--ease-custom);
+  }
+
+  .btn-primary-custom:hover::after {
+    @apply scale-x-100 origin-bottom-left;
+  }
+
+  .btn-outline-custom {
+    @apply border border-border bg-background text-foreground shadow-xs;
+    /* Para el shadow-xs por defecto de Tailwind: shadow-xs */
+    transition-property: background-color, color, box-shadow;
+    transition-duration: var(--duration-default);
+    transition-timing-function: var(--ease-custom);
+  }
+  .btn-outline-custom:hover {
+    @apply bg-muted text-muted-foreground;
+    box-shadow: var(--shadow-card-custom);
+  }
+
+  .card-rounded-custom {
+    border-top-left-radius: var(--radius-xl);
+    border-top-right-radius: var(--radius-xl);
+    border-bottom-left-radius: var(--radius-md);
+    border-bottom-right-radius: var(--radius-md);
+  }
+
+  .card-pattern {
+    /* Este usa --color-background, que es un HSL. Para hsla, el canal alfa debe estar al final. */
+    /* Asumiendo que quieres una opacidad del 5%: */
+    background-image: repeating-linear-gradient(-45deg, hsla(var(--color-background), 0.05), hsla(var(--color-background), 0.05) 2px, transparent 2px, transparent 4px);
+  }
+
+  .card-border-top-primary {
+    border-top-width: var(--border-width-3);
+    border-top-color: hsl(var(--color-primary));
+    @apply border-l border-r border-b border-border; /* Usa la variable de tema para el color de borde estándar */
+  }
+
+  .input-underline-active {
+    @apply border-b-2 border-transparent;
+    transition: border-bottom-color var(--duration-default) var(--ease-custom), box-shadow var(--duration-default) var(--ease-custom);
+  }
+
+  .input-underline-active:focus,
+  .input-underline-active:active {
+    border-bottom-color: hsl(var(--color-primary));
+    box-shadow: 0 1px 0 0 hsl(var(--color-primary));
+  }
+
+  /* Override para el anillo de foco de shadcn/ui (último recurso) */
+  .input-underline-active.focus-visible:ring, /* Simplificado, asumiendo que .focus-visible:ring es un selector común */
+  .input-underline-active.focus-visible:ring-offset,
+  .input-underline-active.focus-visible:ring-opacity {
+      --tw-ring-color: transparent !important;
+      --tw-ring-offset-color: transparent !important;
+      --tw-ring-offset-width: 0px !important;
+      --tw-ring-opacity: 0 !important;
+      box-shadow: 0 1px 0 0 hsl(var(--color-primary)) !important;
+      border-color: hsl(var(--color-primary)) !important;
+  }
+
+  .checkbox-custom {
+    border-radius: 2px; /* Simplificado a un radio pequeño estándar */
+    @apply flex items-center justify-center;
+  }
+
+  .radio-custom {
+    @apply appearance-none inline-block w-4 h-4 border-2 border-border rounded-full relative;
+    /* w-4 y h-4 son 1rem por defecto */
+    transition: border-color var(--duration-default) var(--ease-custom);
+  }
+
+  .radio-custom:checked {
+    border-color: hsl(var(--color-primary));
+  }
+
+  .radio-custom:checked::before {
+    content: '';
+    @apply block w-2 h-2 bg-primary rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2;
+    /* w-2 y h-2 son 0.5rem por defecto */
+  }
+
+  .radio-custom:focus-visible {
+    @apply outline-none;
+    box-shadow: 0 0 0 3px hsl(var(--color-ring));
+  }
+
+  .navlink-subtle-active {
+    @apply opacity-100 scale-105; /* scale-105 es una utilidad común */
+    transition: opacity var(--duration-default) var(--ease-custom), transform var(--duration-default) var(--ease-custom);
+  }
+}
+
+/* @layer utilities ya no es necesario si las brand colors están en @theme */
+/* Tailwind generará .text-brand-orange, .bg-brand-orange, etc. */
+/* Si necesitas la .border-brand-warning específica con el color de error: */
+@layer utilities {
+  .border-brand-warning-specific {
+    border-color: hsl(var(--color-brand-warning-border));
   }
 }

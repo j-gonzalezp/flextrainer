@@ -35,28 +35,19 @@ const GoalList: React.FC<GoalListProps> = ({
   onClearCategoryFilters,
   onRequestSort
 }) => {
-  // Función auxiliar para garantizar que pasemos el estado actual
   const handleToggleActive = (goalId: number, currentState: Goal['active']) => {
-    // Pasamos el ID y el estado actual tal cual lo espera la función del hook
     onToggleActive(goalId, currentState);
-    
-    // Para debugging
-    // Updated log to more accurately reflect the toggle logic used in the hook
     console.log(`Toggling goal ${goalId} from ${currentState} to ${currentState === 1 ? 0 : 1}`);
   };
 
-  // Helper to render sort icons
   const renderSortIcon = (columnKey: SortableGoalKeys) => {
     if (sortConfig?.key === columnKey) {
       return sortConfig.direction === 'asc' ? <ChevronUp className="inline ml-1 h-4 w-4" /> : <ChevronDown className="inline ml-1 h-4 w-4" />;
     }
-    // Apply group-hover effect to ChevronsUpDown as well
     return <ChevronsUpDown className="inline ml-1 h-4 w-4 opacity-30 group-hover:opacity-100 transition-opacity" />;
   };
 
   if (displayedGoals.length === 0 && selectedCategoryFilters.length === 0) {
-    // Show 'no goals' message only if no filters are applied resulting in an empty list
-    // If filters are applied and the list is empty, it's an expected outcome of filtering
     return <p className="text-center text-muted-foreground py-10">No hay metas definidas para este microciclo. ¡Añade la primera!</p>;
   }
 
@@ -65,7 +56,7 @@ const GoalList: React.FC<GoalListProps> = ({
   }
 
   return (
-    <Table>
+    <Table className="animate-fade-in-up">
       <TableHeader>
         <TableRow>
           <TableHead onClick={() => onRequestSort('exercise_name')} className="cursor-pointer hover:bg-muted/50 group"><span className='sr-only'>Ordenar por </span>Ejercicio{renderSortIcon('exercise_name')}</TableHead>
@@ -148,7 +139,7 @@ const GoalList: React.FC<GoalListProps> = ({
               <Button
                 variant={goal.active === 1 ? "default" : "outline"}
                 size="sm"
-                className={`px-3 py-1 h-8 ${goal.active === 1 ? "bg-green-600 hover:bg-green-700" : "bg-gray-200 hover:bg-gray-300 border border-gray-300"}`}
+                className={`px-3 py-1 h-8 ${goal.active === 1 ? "bg-brand-success" : "bg-muted hover:bg-muted-foreground border border-border"}`}
                 onClick={() => handleToggleActive(goal.id, goal.active)}
                 disabled={isLoading}
               >

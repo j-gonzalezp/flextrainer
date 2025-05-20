@@ -31,7 +31,6 @@ const LoginSignup: React.FC = () => {
         response = await signUpUser({ email, password });
         console.log('[LoginSignup.handleSubmit] signUpUser response:', { data: response.data, error: response.error });
         if (!response.error && response.data.user) {
-
           if (response.data.session) {
             setSuccessMessage('¡Registro exitoso! Ahora estás conectado.');
           } else {
@@ -43,7 +42,6 @@ const LoginSignup: React.FC = () => {
         console.log('[LoginSignup.handleSubmit] signInWithPassword response:', { data: response.data, error: response.error });
         if (!response.error && response.data.user && response.data.session) {
           setSuccessMessage('¡Inicio de sesión exitoso!');
-
         }
       }
 
@@ -55,7 +53,6 @@ const LoginSignup: React.FC = () => {
       setError(e.message || 'Ocurrió un error inesperado.');
     } finally {
       setIsSubmitting(false);
-
     }
   };
 
@@ -73,7 +70,6 @@ const LoginSignup: React.FC = () => {
       setPassword('');
     }
     setIsSubmitting(false);
-
   };
 
   if (authLoading) {
@@ -94,7 +90,6 @@ const LoginSignup: React.FC = () => {
         </CardHeader>
         <CardContent>
           {successMessage && (
-
             <Alert variant="default" className="mb-4 bg-green-50 border-green-300 text-green-700 dark:bg-green-900/30 dark:border-green-700 dark:text-green-400">
               <AlertTitle>Éxito</AlertTitle>
               <AlertDescription>{successMessage}</AlertDescription>
@@ -103,7 +98,7 @@ const LoginSignup: React.FC = () => {
           <p>Ya has iniciado sesión.</p>
         </CardContent>
         <CardFooter>
-          <Button onClick={handleSignOut} disabled={isSubmitting} className="w-full">
+          <Button onClick={handleSignOut} disabled={isSubmitting} className="w-full border">
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Cerrar Sesión
           </Button>
@@ -113,8 +108,8 @@ const LoginSignup: React.FC = () => {
   }
 
   return (
-    <Tabs defaultValue="login" className="w-full max-w-md mx-auto">
-      <TabsList className="grid w-full grid-cols-2">
+    <Tabs defaultValue="login" className="w-full max-w-md mx-auto ">
+      <TabsList className="grid w-full grid-cols-2 bg-muted text-muted-foreground p-1 rounded-md border border-border"> {/* <--- LÍNEA MODIFICADA */}
         <TabsTrigger value="login">Iniciar Sesión</TabsTrigger>
         <TabsTrigger value="signup">Registrarse</TabsTrigger>
       </TabsList>
@@ -161,7 +156,7 @@ const LoginSignup: React.FC = () => {
             </div>
           </CardContent>
           <CardFooter>
-            <Button onClick={() => handleSubmit('login')} disabled={isSubmitting} className="w-full">
+            <Button onClick={() => handleSubmit('login')} disabled={isSubmitting} className="w-full border">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Iniciar Sesión
             </Button>
@@ -205,7 +200,7 @@ const LoginSignup: React.FC = () => {
             </div>
           </CardContent>
           <CardFooter>
-            <Button onClick={() => handleSubmit('signup')} disabled={isSubmitting} className="w-full">
+            <Button onClick={() => handleSubmit('signup')} disabled={isSubmitting} className="w-full border">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Registrarse
             </Button>

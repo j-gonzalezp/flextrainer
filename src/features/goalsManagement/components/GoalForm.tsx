@@ -86,12 +86,12 @@ const GoalForm: React.FC<GoalFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4.5">
       <div>
         <Label htmlFor="exerciseName">Nombre del Ejercicio</Label>
         <Input id="exerciseName" value={exerciseName} onChange={(e) => setExerciseName(e.target.value)} required disabled={isSubmitting} />
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4.5">
         <div>
           <Label htmlFor="sets">Sets</Label>
           <Input id="sets" type="number" min="0" value={sets} onChange={(e) => setSets(e.target.value === '' ? '' : Number(e.target.value))} required disabled={isSubmitting} />
@@ -101,7 +101,7 @@ const GoalForm: React.FC<GoalFormProps> = ({
           <Input id="reps" type="number" min="0" value={reps} onChange={(e) => setReps(e.target.value === '' ? '' : Number(e.target.value))} required disabled={isSubmitting} />
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4.5">
         <div>
           <Label htmlFor="weight">Peso (kg)</Label>
           <Input id="weight" type="number" step="0.01" min="0" value={weight} onChange={(e) => setWeight(e.target.value === '' ? '' : Number(e.target.value))} disabled={isSubmitting} />
@@ -138,11 +138,11 @@ const GoalForm: React.FC<GoalFormProps> = ({
       </div>
       <div className="flex justify-end space-x-2 pt-2">
         {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+          <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting} className="btn-outline-custom">
             Cancelar
           </Button>
         )}
-        <Button type="submit" disabled={isSubmitting}>
+        <Button type="submit" disabled={isSubmitting} variant="default" className="btn-primary-custom">
           {isSubmitting ? (initialData ? 'Guardando Cambios...' : 'Creando Meta...') : (initialData ? 'Guardar Cambios' : 'Crear Meta')}
         </Button>
       </div>

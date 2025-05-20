@@ -39,7 +39,7 @@ const GoalListItem: React.FC<GoalListItemProps> = ({
       <TableCell className="text-center">{goal.duration_seconds !== null && goal.duration_seconds !== undefined ? `${goal.duration_seconds}s` : '-'}</TableCell>
       <TableCell>
         {goal.categories && goal.categories.length > 0 ? (
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1.5">
             {goal.categories.slice(0, 2).map((category, index) => (
               <Badge key={index} variant="secondary">{category}</Badge>
             ))}

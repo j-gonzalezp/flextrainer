@@ -1,4 +1,3 @@
-// training/src/features/workoutExecution/components/ChangeExerciseModal.tsx
 import React, { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -15,7 +14,7 @@ interface ChangeExerciseModalProps {
   onClose: () => void;
   currentCategoryFilters: string[];
   onExerciseSelected: (selectedGoal: Goal) => void;
-  selectedMicrocycle: number | null; // <-- NEW PROP
+  selectedMicrocycle: number | null;
 }
 
 const ChangeExerciseModal: React.FC<ChangeExerciseModalProps> = ({
@@ -23,7 +22,7 @@ const ChangeExerciseModal: React.FC<ChangeExerciseModalProps> = ({
   onClose,
   currentCategoryFilters,
   onExerciseSelected,
-  selectedMicrocycle, // <-- Destructure new prop
+  selectedMicrocycle,
 }) => {
   const { user } = useAuth();
   const [allUserGoals, setAllUserGoals] = useState<Goal[]>([]);
@@ -32,19 +31,16 @@ const ChangeExerciseModal: React.FC<ChangeExerciseModalProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Only fetch if modal is open, user exists, AND a microcycle is selected
     if (isOpen && user?.id && selectedMicrocycle !== null) { 
       setIsLoading(true);
       setError(null);
       setSearchTerm(''); 
 
-      // Pass selectedMicrocycle to the service function
       fetchAllActiveUserGoals(user.id, selectedMicrocycle) 
         .then(data => {
           setAllUserGoals(data || []); 
         })
-        .catch(err => {
-          console.error("Failed to fetch user goals for modal:", err);
+        .catch(() => {
           setError("No se pudieron cargar los ejercicios para este microciclo. Intenta de nuevo.");
           setAllUserGoals([]); 
         })
@@ -60,7 +56,7 @@ const ChangeExerciseModal: React.FC<ChangeExerciseModalProps> = ({
         setIsLoading(false);
         setAllUserGoals([]);
     }
-  }, [isOpen, user?.id, selectedMicrocycle]); // <-- Added selectedMicrocycle to dependencies
+  }, [isOpen, user?.id, selectedMicrocycle]);
 
   const filteredExercises = useMemo(() => {
     let exercisesToFilter: Goal[] = allUserGoals;
@@ -83,8 +79,8 @@ const ChangeExerciseModal: React.FC<ChangeExerciseModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(openState) => !openState && onClose()}>
-      <DialogContent className="sm:max-w-lg max-h-[calc(100vh-4rem)] flex flex-col p-0">
-        <DialogHeader className="p-6 pb-4 border-b">
+      <DialogContent className="sm:max-w-lg max-h-[calc(100vh-4rem)] flex flex-col p-0 animate-fade-in-up">
+        <DialogHeader className="p-4.5 pb-3.5 border-b">
           <DialogTitle className="text-xl">
             Seleccionar Ejercicio del Microciclo {selectedMicrocycle ?? ''}
           </DialogTitle>
@@ -96,7 +92,7 @@ const ChangeExerciseModal: React.FC<ChangeExerciseModalProps> = ({
           </DialogDescription>
         </DialogHeader>
         
-        <div className="px-6 pt-4 pb-2">
+        <div className="px-4.5 pt-3.5 pb-1.5">
           <div className="relative">
             <Input
               type="text"
@@ -118,18 +114,18 @@ const ChangeExerciseModal: React.FC<ChangeExerciseModalProps> = ({
           </div>
         </div>
 
-        <div className="flex-grow overflow-hidden px-6">
+        <div className="flex-grow overflow-hidden px-4.5">
           {isLoading ? ( /* ... */ <div className="flex justify-center items-center h-full"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>)
            : error ? ( /* ... */ <div className="flex flex-col justify-center items-center h-full text-center px-4"><p className="text-destructive">{error}</p><Button variant="outline" onClick={onClose} className="mt-4">Cerrar</Button></div>)
            : (
             <ScrollArea className="h-full pr-2 -mr-2">
               {filteredExercises.length > 0 ? (
-                <div className="space-y-1 py-1">
+                <div className="space-y-1.5 py-1.5">
                   {filteredExercises.map(goal => (
                     <Button
                       key={goal.id}
                       variant="ghost"
-                      className="w-full justify-start text-left h-auto py-2.5 px-3"
+                      className="w-full justify-start text-left h-auto py-1.5 px-1.5"
                       onClick={() => { onExerciseSelected(goal); }}
                     >
                       <div>
@@ -154,9 +150,9 @@ const ChangeExerciseModal: React.FC<ChangeExerciseModalProps> = ({
           )}
         </div>
         
-        <DialogFooter className="p-6 pt-4 border-t">
+        <DialogFooter className="p-4.5 pt-3.5 border-t">
           <DialogClose asChild> 
-            <Button variant="outline">Cancelar</Button>
+            <Button variant="outline" className="btn-outline-custom">Cancelar</Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

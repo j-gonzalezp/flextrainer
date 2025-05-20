@@ -16,7 +16,6 @@ const GoalsManagementPage: React.FC = () => {
     user,
     microcycles,
     selectedMicrocycle,
-    goals, // This is the raw list from the microcycle
     displayedGoals, // This is the filtered and sorted list for rendering
     isLoadingMicrocycles,
     isLoadingGoals,
@@ -86,13 +85,13 @@ const GoalsManagementPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8 p-4 sm:p-6 lg:p-8">
+    <div className="space-y-8 p-4.5 sm:p-6 lg:p-8 animate-fade-in-up">
       <header className="mb-6">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Gestión de Metas</h1>
         <p className="text-sm sm:text-base text-muted-foreground mt-1">Organiza y planifica tus objetivos de entrenamiento por microciclos.</p>
       </header>
 
-      <Card>
+      <Card shadow-elevated>
         <CardHeader>
           <CardTitle>Selector de Microciclos</CardTitle>
           <ShadcnCardDescription>
@@ -132,7 +131,7 @@ const GoalsManagementPage: React.FC = () => {
       </Card>
 
       {selectedMicrocycle !== null && (
-        <Card>
+        <Card shadow-elevated>
           <CardHeader>
             <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 sm:gap-4">
               <div>
@@ -208,7 +207,7 @@ const GoalsManagementPage: React.FC = () => {
       )}
 
       {selectedMicrocycle !== null && (
-        <Card className="mt-8">
+        <Card className="mt-5.5" shadow-elevated>
           <CardHeader>
             <CardTitle>Ejercicios Completados</CardTitle>
             <ShadcnCardDescription>Historial de sets registrados para este microciclo.</ShadcnCardDescription>

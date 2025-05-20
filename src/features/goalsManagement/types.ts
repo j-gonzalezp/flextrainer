@@ -23,7 +23,7 @@ export type GoalInsert = Omit<Goal, 'id' | 'user_id' | 'created_at' | 'updated_a
   categories?: string[];
 };
 
-export type GoalUpdate = Partial<Omit<Goal, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'microcycle'>>>;
+export type GoalUpdate = Partial<Omit<Goal, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'microcycle'>>;
 
 export interface DisplayableDoneExercise extends DoneExerciseLog {
   exercise_name: string;

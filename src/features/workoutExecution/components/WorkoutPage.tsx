@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 
 import CurrentExerciseDisplay from './CurrentExerciseDisplay';
-import PerformanceLogger, { SetData as PerformanceLoggerSetData } from './PerformanceLogger';
+import PerformanceLogger from './PerformanceLogger';
+import type { SetData as PerformanceLoggerSetData } from './PerformanceLogger';
 import ChangeExerciseModal from './ChangeExerciseModal';
 import type { Goal } from '@/features/goalsManagement/types';
 
@@ -72,7 +73,7 @@ const WorkoutPage: React.FC = () => {
   if (userMicrocycles.length === 0 && !isLoadingMicrocycles) { return <Card className="w-full max-w-lg mx-auto mt-10 text-center"><CardHeader><CardTitle>Sin Microciclos</CardTitle></CardHeader><CardContent><p>No hay microciclos.</p></CardContent></Card>; }
 
   return (
-    <div className="max-w-xl mx-auto p-4 space-y-6 pb-20">
+    <div className="max-w-xl mx-auto p-4.5 space-y-6 pb-20 animate-fade-in-up">
       {selectedWorkoutMicrocycle !== null && !isLoadingGoals && !error && (
         <div className="space-y-6">
           {currentGoal ? (
@@ -146,7 +147,7 @@ const WorkoutPage: React.FC = () => {
       )}
 
       {/* --- Bloque de Controles: Restored original structure, with category button styling updated --- */}
-      <div className={`border-t pt-4 mt-8 ${userMicrocycles.length === 0 && !isLoadingMicrocycles ? 'hidden' : ''}`}>
+      <div className={`border-t pt-4 mt-5.5 animate-fade-in-up ${userMicrocycles.length === 0 && !isLoadingMicrocycles ? 'hidden' : ''}`}>
         <div className="flex justify-center mb-4">
             <Button variant="ghost" onClick={() => setControlesVisibles(!controlesVisibles)} className="text-sm text-muted-foreground hover:text-foreground">
             {controlesVisibles ? <ChevronUp className="mr-2 h-4 w-4" /> : <ChevronDown className="mr-2 h-4 w-4" />}
@@ -155,7 +156,7 @@ const WorkoutPage: React.FC = () => {
         </div>
 
         {controlesVisibles && (
-            <div className="space-y-6 bg-card p-4 rounded-lg shadow">
+            <div className="space-y-6 bg-card p-4.5 rounded-lg shadow-elevated">
             <div className="p-1"> {/* Microcycle Selector Block Start */}
               <Label htmlFor="microcycle-selector-trigger" className="text-xs text-muted-foreground">Microciclo Actual</Label>
               <Dialog open={isMicrocycleModalOpen} onOpenChange={setIsMicrocycleModalOpen}>
@@ -259,8 +260,8 @@ const WorkoutPage: React.FC = () => {
                                 flex-grow sm:flex-grow-0 px-3 py-1.5 text-xs font-medium rounded-md transition-colors
                                 focus:outline-none focus:ring-2 focus:ring-offset-1
                                 ${isSelected 
-                                  ? 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500' 
-                                  : 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500'
+                                  ? 'bg-brand-success text-white hover:bg-brand-success/90 focus:ring-brand-success' 
+                                  : 'bg-brand-error text-white hover:bg-brand-error/90 focus:ring-brand-error'
                                 }
                               `}
                             >

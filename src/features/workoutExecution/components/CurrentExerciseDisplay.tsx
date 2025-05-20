@@ -44,17 +44,17 @@ const CurrentExerciseDisplay: React.FC<CurrentExerciseDisplayProps> = ({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-3 space-y-3">
+      <CardContent className="pt-3.5 space-y-3.5">
         {goal.notes && (
           <div>
             <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Notas:</h4>
-            <p className="text-sm text-foreground whitespace-pre-wrap bg-muted/50 p-2 rounded-md mt-1">{goal.notes}</p>
+            <p className="text-sm text-foreground whitespace-pre-wrap bg-muted/50 p-1.5 rounded-md mt-1.5">{goal.notes}</p>
           </div>
         )}
         {goal.categories && goal.categories.length > 0 && (
           <div>
-            <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-1">Categorías:</h4>
-            <div className="flex flex-wrap gap-2">
+            <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-1.5">Categorías:</h4>
+            <div className="flex flex-wrap gap-1.5">
               {goal.categories.map((category, index) => (
                 <span 
                   key={index} 
@@ -74,7 +74,7 @@ const CurrentExerciseDisplay: React.FC<CurrentExerciseDisplayProps> = ({
             onClick={onChangeExerciseClick} 
             aria-label="Cambiar ejercicio actual"
             disabled={isProcessingChange}
-            className="mt-2" // Margin top for spacing
+            className="mt-1.5" // Margin top for spacing
           >
             <Replace className="mr-2 h-4 w-4" /> 
             Cambiar Ejercicio
