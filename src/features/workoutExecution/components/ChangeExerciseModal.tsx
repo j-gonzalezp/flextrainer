@@ -105,7 +105,7 @@ const ChangeExerciseModal: React.FC<ChangeExerciseModalProps> = ({
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 hover:bg-transparent hover:text-foreground/80"
                 onClick={() => setSearchTerm('')}
               >
                 <XCircle className="h-4 w-4 text-muted-foreground"/>
@@ -116,7 +116,7 @@ const ChangeExerciseModal: React.FC<ChangeExerciseModalProps> = ({
 
         <div className="flex-grow overflow-hidden px-4.5">
           {isLoading ? ( /* ... */ <div className="flex justify-center items-center h-full"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>)
-           : error ? ( /* ... */ <div className="flex flex-col justify-center items-center h-full text-center px-4"><p className="text-destructive">{error}</p><Button variant="outline" onClick={onClose} className="mt-4">Cerrar</Button></div>)
+           : error ? ( /* ... */ <div className="flex flex-col justify-center items-center h-full text-center px-4"><p className="text-destructive">{error}</p><Button variant="outline" onClick={onClose} className="mt-4 border-muted-foreground/30 text-foreground hover:bg-muted/50 hover:border-primary/50 transition-colors">Cerrar</Button></div>)
            : (
             <ScrollArea className="h-full pr-2 -mr-2">
               {filteredExercises.length > 0 ? (
@@ -125,7 +125,7 @@ const ChangeExerciseModal: React.FC<ChangeExerciseModalProps> = ({
                     <Button
                       key={goal.id}
                       variant="ghost"
-                      className="w-full justify-start text-left h-auto py-1.5 px-1.5"
+                      className="w-full justify-start text-left h-auto py-1.5 px-1.5 hover:bg-muted/50 text-foreground"
                       onClick={() => { onExerciseSelected(goal); }}
                     >
                       <div>
@@ -152,7 +152,7 @@ const ChangeExerciseModal: React.FC<ChangeExerciseModalProps> = ({
         
         <DialogFooter className="p-4.5 pt-3.5 border-t">
           <DialogClose asChild> 
-            <Button variant="outline" className="btn-outline-custom">Cancelar</Button>
+            <Button variant="outline" className="border-muted-foreground/30 text-foreground hover:bg-muted/50 hover:border-primary/50 transition-colors">Cancelar</Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

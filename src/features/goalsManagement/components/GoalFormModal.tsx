@@ -186,7 +186,7 @@ const GoalFormModal: React.FC<GoalFormModalProps> = ({
               Cancelar
             </Button>
             <Button type="submit" disabled={isLoading} variant="default" className="btn-primary-custom">
-              {isLoading ? (editingGoal ? 'Guardando...' : 'Añadiendo...') : (editingGoal ? 'Guardar Cambios' : 'Añadir Meta')}\n            </Button>
+              {isLoading ? (editingGoal ? 'Guardando...' : 'Añadiendo...') : (editingGoal ? 'Guardar Cambios' : 'Añadir Meta')}           </Button>
           </DialogFooter>
         </form>
       </DialogContent>

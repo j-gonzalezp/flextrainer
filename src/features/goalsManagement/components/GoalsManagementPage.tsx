@@ -9,14 +9,17 @@ import type { Goal, GoalInsert, GoalUpdate } from '../types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription as ShadcnCardDescription, CardFooter } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2 } from 'lucide-react';
+import ManageMesocycleModal from '@/features/initialSetup/components/ManageMesocycleModal';
 import DoneExerciseList from './DoneExerciseList';
 
 const GoalsManagementPage: React.FC = () => {
+  const [isCreateFirstMicrocycleModalOpen, setIsCreateFirstMicrocycleModalOpen] = React.useState(false);
+  
   const {
     user,
     microcycles,
     selectedMicrocycle,
-    displayedGoals, // This is the filtered and sorted list for rendering
+    displayedGoals,
     isLoadingMicrocycles,
     isLoadingGoals,
     isSubmittingGoal,
@@ -24,12 +27,11 @@ const GoalsManagementPage: React.FC = () => {
     error,
     setError,
     handleSelectMicrocycle,
-    handleCreateNextMicrocycle,
     handleAddGoal,
     handleUpdateGoal,
     handleDeleteGoal,
     handleToggleActive: handleToggleGoalActive,
-    // Filter and sort related state and handlers
+    refreshMicrocycles,
     availableCategories,
     selectedCategoryFilters,
     sortConfig,
@@ -37,8 +39,39 @@ const GoalsManagementPage: React.FC = () => {
     handleClearCategoryFilters,
     handleRequestSort,
     doneExercises,
-    isLoadingDoneExercises,
+    isLoadingDoneExercises
   } = useGoalsManagement();
+// Detectar ausencia de microciclos y abrir modal automáticamente
+  React.useEffect(() => {
+    // console.log('[GoalsManagementPage] Checking for microcycles:', microcycles.length, 'Loading:', isLoadingMicrocycles);
+    if (!isLoadingMicrocycles && microcycles.length === 0) {
+      console.log('[GoalsManagementPage] No microcycles found for user, opening ManageMesocycleModal.');
+      setIsCreateFirstMicrocycleModalOpen(true);
+    } else if (!isLoadingMicrocycles && microcycles.length > 0 && selectedMicrocycle === null) {
+      // Si ya hay microciclos pero ninguno está seleccionado (ej. después de un logout/login)
+      // Puedes decidir seleccionar el último microciclo automáticamente aquí.
+      // const latestMicrocycle = microcycles[microcycles.length - 1];
+      // handleSelectMicrocycle(latestMicrocycle.microcycle_number); // Assuming microcycle object has microcycle_number
+    }
+  }, [microcycles, isLoadingMicrocycles, selectedMicrocycle, handleSelectMicrocycle]); // Asegúrate de incluir handleSelectMicrocycle si lo usas aquí.
+
+  // const handleFirstMicrocycleCreated = (microcycleNumber: number) => {
+  //   // El hook useGoalsManagement debería tener una función para refrescar y seleccionar,
+  //   // o su useEffect debería manejar la carga de metas para el nuevo microciclo seleccionado.
+  //   // Por ahora, asumimos que la lógica del hook se encarga de recargar las metas cuando cambia selectedMicrocycle.
+  //   // Primero, podríamos intentar refrescar la lista de microciclos para incluir el nuevo.
+  //   // La prop 'refreshMicrocycles' fue añadida al hook useGoalsManagement anteriormente.
+  //   // selectedMicrocycle ya debería ser 'microcycleNumber' (1) debido a la lógica de apertura del modal.
+  //   // La llamada a hookHandleAddGoal habrá actualizado el estado 'goals' dentro del hook.
+  //   // Solo necesitamos refrescar la lista de microciclos para que el selector muestre '1'.
+  //   if (refreshMicrocycles) {
+  //     refreshMicrocycles(); // Esto actualizará la lista de microciclos disponibles en la UI.
+  //                          // El useEffect en useGoalsManagement que depende de user.id y selectedMicrocycle
+  //                          // ya se habrá disparado para cargar las metas del microciclo 1.
+  //   }
+  //   // No es necesario llamar a handleSelectMicrocycle(microcycleNumber) aquí de nuevo si ya se hizo al abrir.
+  //   setIsCreateFirstMicrocycleModalOpen(false); // Cerrar el modal
+  // };
 
   const [isGoalFormOpen, setIsGoalFormOpen] = React.useState(false);
   const [editingGoal, setEditingGoal] = React.useState<Goal | null>(null);
@@ -75,7 +108,7 @@ const GoalsManagementPage: React.FC = () => {
           <AlertTitle className="font-semibold">Ocurrió un Error</AlertTitle>
           <AlertDescription>
             {error}
-            <Button onClick={() => setError(null)} variant="link" className="p-0 h-auto ml-2 text-xs text-destructive-foreground hover:underline">
+            <Button onClick={() => setError(null)} variant="link" className="p-0 h-auto ml-2 text-xs text-destructive-foreground hover:underline hover:bg-transparent">
               Descartar
             </Button>
           </AlertDescription>
@@ -118,15 +151,38 @@ const GoalsManagementPage: React.FC = () => {
           )}
         </CardContent>
         <CardFooter className="border-t pt-4">
-          <Button
-            onClick={handleCreateNextMicrocycle}
-            disabled={isLoadingNextMicrocycle || isSubmittingGoal || isLoadingMicrocycles}
-            className="w-full sm:w-auto"
-            size="sm"
-          >
-            {isLoadingNextMicrocycle && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {microcycles.length > 0 ? 'Crear Siguiente Microciclo' : 'Crear Primer Microciclo'}
-          </Button>
+          {/* Button for creating the first microcycle */}
+          {/* Button for managing mesocycle (formerly creating the first microcycle) */}
+            <Button
+              onClick={() => {
+                // This button will now always open the modal for managing the mesocycle.
+                // The modal logic will handle whether it's the first microcycle or editing.
+                // We don't need to set selectedMicrocycle here anymore based on microcycle count.
+                setIsCreateFirstMicrocycleModalOpen(true); // This state will control the renamed modal
+              }}
+              disabled={isLoadingNextMicrocycle || isSubmittingGoal || isLoadingMicrocycles}
+              className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground transition-colors mr-2"
+              size="sm"
+            >
+              {isLoadingNextMicrocycle && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Gestionar Mesociclo
+            </Button>
+
+          {/* Button for creating subsequent microcycles */}
+            <Button
+              onClick={() => {
+                if (microcycles.length > 0) {
+                  const nextMicrocycle = Math.max(...microcycles) + 1;
+                  handleSelectMicrocycle(nextMicrocycle);
+                }
+              }}
+              disabled={isLoadingNextMicrocycle || isSubmittingGoal || isLoadingMicrocycles || microcycles.length === 0}
+              className="w-full sm:w-auto bg-secondary hover:bg-secondary/90 text-secondary-foreground transition-colors"
+              size="sm"
+            >
+              {isLoadingNextMicrocycle && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Crear Siguiente Microciclo
+            </Button>
         </CardFooter>
       </Card>
 
@@ -145,7 +201,7 @@ const GoalsManagementPage: React.FC = () => {
                   <Button
                     onClick={openGoalFormForCreate}
                     disabled={isSubmittingGoal || isLoadingGoals}
-                    className="w-full sm:w-auto flex-shrink-0"
+                    className="w-full sm:w-auto flex-shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
                     size="sm"
                   >
                     Añadir Nueva Meta
@@ -207,7 +263,7 @@ const GoalsManagementPage: React.FC = () => {
       )}
 
       {selectedMicrocycle !== null && (
-        <Card className="mt-5.5" shadow-elevated>
+        <Card className="mt-5.5 shadow-elevated">
           <CardHeader>
             <CardTitle>Ejercicios Completados</CardTitle>
             <ShadcnCardDescription>Historial de sets registrados para este microciclo.</ShadcnCardDescription>
@@ -237,6 +293,21 @@ const GoalsManagementPage: React.FC = () => {
               Por favor, selecciona un microciclo para ver o añadir metas.
             </p>
          </div>
+      )}
+      {/* ... resto del JSX de GoalsManagementPage */}
+      {isCreateFirstMicrocycleModalOpen && (
+        <ManageMesocycleModal
+          isOpen={isCreateFirstMicrocycleModalOpen}
+          onClose={() => setIsCreateFirstMicrocycleModalOpen(false)}
+          onGoalsCreated={(microcycleNumber: number) => {
+            // toast.success(`¡Metas del Microciclo ${microcycleNumber} creadas exitosamente!`); // Assuming toast is available
+            setIsCreateFirstMicrocycleModalOpen(false); // Cierra el modal
+            refreshMicrocycles(); // Refresca la lista de microciclos y metas en la página
+            handleSelectMicrocycle(microcycleNumber); // Asegura que el microciclo recién creado esté seleccionado
+          }}
+          hookHandleAddGoal={handleAddGoal} // Pasa la función del hook para añadir metas
+          targetMicrocycleNumber={1} // Siempre será 1 para este flujo
+        />
       )}
     </div>
   );

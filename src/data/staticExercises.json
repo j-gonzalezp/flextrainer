@@ -1,0 +1,191 @@
+[
+  {
+    "id": "static_ex_001",
+    "name": "Press de Banca con Barra",
+    "category_general": "Fuerza",
+    "category_specific": ["Push", "Upper Body"],
+    "equipment_needed": ["Barbell", "Bench"],
+    "description_short": "Ejercicio fundamental para el pecho y tríceps.",
+    "variations": ["Press de Banca con Mancuernas"]
+  },
+  {
+    "id": "static_ex_002",
+    "name": "Sentadilla con Barra (Back Squat)",
+    "category_general": "Fuerza",
+    "category_specific": ["Legs", "Full Body"],
+    "equipment_needed": ["Barbell", "Squat Rack"],
+    "description_short": "Ejercicio compuesto para piernas y glúteos.",
+    "variations": ["Sentadilla Frontal", "Sentadilla Búlgara"]
+  },
+  {
+    "id": "static_ex_003",
+    "name": "Peso Muerto Convencional",
+    "category_general": "Fuerza",
+    "category_specific": ["Pull", "Legs", "Back", "Full Body"],
+    "equipment_needed": ["Barbell", "Plates"],
+    "description_short": "Levantamiento de peso desde el suelo.",
+    "variations": ["Peso Muerto Rumano", "Peso Muerto Sumo"]
+  },
+  {
+    "id": "static_ex_004",
+    "name": "Dominadas (Pull-ups)",
+    "category_general": "Fuerza",
+    "category_specific": ["Pull", "Upper Body", "Back"],
+    "equipment_needed": ["Pull-up Bar", "Bodyweight"],
+    "description_short": "Ejercicio de fuerza de peso corporal para la espalda.",
+    "variations": ["Dominadas con Agarre Supino (Chin-ups)", "Dominadas Asistidas"]
+  },
+  {
+    "id": "static_ex_005",
+    "name": "Press de Hombros con Mancuernas (Sentado)",
+    "category_general": "Fuerza",
+    "category_specific": ["Push", "Upper Body", "Shoulders"],
+    "equipment_needed": ["Dumbbells", "Bench"],
+    "description_short": "Fortalece los hombros y tríceps.",
+    "variations": ["Press Militar con Barra"]
+  },
+  {
+    "id": "static_ex_006",
+    "name": "Flexiones (Push-ups)",
+    "category_general": "Fuerza",
+    "category_specific": ["Push", "Upper Body", "Chest"],
+    "equipment_needed": ["Bodyweight"],
+    "description_short": "Ejercicio de peso corporal para el pecho y tríceps.",
+    "variations": ["Flexiones Inclinadas", "Flexiones Declinadas"]
+  },
+  {
+    "id": "static_ex_007",
+    "name": "Estiramiento de Isquiotibiales",
+    "category_general": "Flexibilidad",
+    "category_specific": ["Isquiotibiales", "Piernas"],
+    "equipment_needed": ["Bodyweight"],
+    "description_short": "Mejora la flexibilidad de la parte posterior del muslo.",
+    "default_parameters_guidance": {
+      "duration_seconds": "30-60",
+      "sets_per_workout_suggestion": "2-3"
+    }
+  },
+  {
+    "id": "static_ex_008",
+    "name": "Trotar / Correr",
+    "category_general": "Cardio",
+    "category_specific": ["Resistencia"],
+    "equipment_needed": ["Running Shoes", "Outdoor"],
+    "description_short": "Ejercicio cardiovascular para mejorar la resistencia.",
+    "default_parameters_guidance": {
+      "duration_minutes": "30-60"
+    }
+  },
+  {
+    "id": "static_ex_009",
+    "name": "Yoga: Saludo al Sol",
+    "category_general": "Flexibilidad",
+    "category_specific": ["Movilidad", "Cuerpo Completo"],
+    "equipment_needed": ["Yoga Mat", "Bodyweight"],
+    "description_short": "Secuencia de posturas para calentar y flexibilizar el cuerpo.",
+    "default_parameters_guidance": {
+      "duration_minutes": "10-20"
+    }
+  },
+  {
+    "id": "static_ex_010",
+    "name": "Entrenamiento en Circuito HIIT",
+    "category_general": "Cardio",
+    "category_specific": ["Intervalos", "Alta Intensidad"],
+    "equipment_needed": ["Bodyweight", "Jump Rope"],
+    "description_short": "Serie de ejercicios de alta intensidad con breves descansos.",
+    "default_parameters_guidance": {
+      "duration_minutes": "20-30"
+    }
+  },
+  {
+    "id": "static_ex_011",
+    "name": "Press de Banca con Mancuernas",
+    "category_general": "Fuerza",
+    "category_specific": ["Push", "Upper Body"],
+    "equipment_needed": ["Dumbbells", "Bench"],
+    "description_short": "Variación del press de banca con mancuernas para mayor rango de movimiento.",
+    "variations": ["Press de Banca con Barra"]
+  },
+  {
+    "id": "static_ex_012",
+    "name": "Sentadilla Frontal",
+    "category_general": "Fuerza",
+    "category_specific": ["Legs", "Full Body"],
+    "equipment_needed": ["Barbell", "Squat Rack"],
+    "description_short": "Variación de sentadilla con la barra en la parte frontal.",
+    "variations": ["Sentadilla con Barra (Back Squat)"]
+  },
+  {
+    "id": "static_ex_013",
+    "name": "Sentadilla Búlgara",
+    "category_general": "Fuerza",
+    "category_specific": ["Legs"],
+    "equipment_needed": ["Dumbbells", "Bench"],
+    "description_short": "Ejercicio unilateral para piernas y glúteos.",
+    "variations": ["Sentadilla con Barra (Back Squat)"]
+  },
+  {
+    "id": "static_ex_014",
+    "name": "Peso Muerto Rumano",
+    "category_general": "Fuerza",
+    "category_specific": ["Pull", "Legs", "Back"],
+    "equipment_needed": ["Barbell", "Dumbbells"],
+    "description_short": "Enfocado en isquiotibiales y glúteos.",
+    "variations": ["Peso Muerto Convencional"]
+  },
+  {
+    "id": "static_ex_015",
+    "name": "Peso Muerto Sumo",
+    "category_general": "Fuerza",
+    "category_specific": ["Pull", "Legs", "Back"],
+    "equipment_needed": ["Barbell", "Plates"],
+    "description_short": "Variación del peso muerto con un stance más amplio.",
+    "variations": ["Peso Muerto Convencional"]
+  },
+  {
+    "id": "static_ex_016",
+    "name": "Dominadas con Agarre Supino (Chin-ups)",
+    "category_general": "Fuerza",
+    "category_specific": ["Pull", "Upper Body", "Back", "Biceps"],
+    "equipment_needed": ["Pull-up Bar", "Bodyweight"],
+    "description_short": "Dominadas con agarre supino, enfatizando el bíceps.",
+    "variations": ["Dominadas (Pull-ups)"]
+  },
+  {
+    "id": "static_ex_017",
+    "name": "Dominadas Asistidas",
+    "category_general": "Fuerza",
+    "category_specific": ["Pull", "Upper Body", "Back"],
+    "equipment_needed": ["Assisted Pull-up Machine", "Resistance Band"],
+    "description_short": "Permite realizar dominadas con ayuda.",
+    "variations": ["Dominadas (Pull-ups)"]
+  },
+  {
+    "id": "static_ex_018",
+    "name": "Press Militar con Barra",
+    "category_general": "Fuerza",
+    "category_specific": ["Push", "Upper Body", "Shoulders"],
+    "equipment_needed": ["Barbell", "Squat Rack"],
+    "description_short": "Ejercicio de hombros con barra, de pie o sentado.",
+    "variations": ["Press de Hombros con Mancuernas (Sentado)"]
+  },
+  {
+    "id": "static_ex_019",
+    "name": "Flexiones Inclinadas",
+    "category_general": "Fuerza",
+    "category_specific": ["Push", "Upper Body", "Chest"],
+    "equipment_needed": ["Bench", "Box", "Bodyweight"],
+    "description_short": "Variación de flexiones más sencilla al inclinar el cuerpo.",
+    "variations": ["Flexiones (Push-ups)"]
+  },
+  {
+    "id": "static_ex_020",
+    "name": "Flexiones Declinadas",
+    "category_general": "Fuerza",
+    "category_specific": ["Push", "Upper Body", "Chest"],
+    "equipment_needed": ["Bench", "Box", "Bodyweight"],
+    "description_short": "Variación de flexiones más difícil al declinar los pies.",
+    "variations": ["Flexiones (Push-ups)"]
+  }
+]

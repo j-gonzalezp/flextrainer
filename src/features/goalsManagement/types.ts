@@ -14,6 +14,7 @@ export interface Goal {
   duration_seconds?: number | null;
   created_at: string;
   updated_at: string;
+  exercise_library_id?: string | null; // Added based on mock data and potential Supabase schema
   completedSetsCount?: number; // Added for displaying completed sets
 }
 

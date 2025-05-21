@@ -79,13 +79,11 @@ export const fetchAllActiveUserGoals = async (userId: string, microcycleNumber: 
   }
 
   if (!data) return [];
-  const processedData = data.map(goal => (
-    {
-      ...goal,
-      active: goal.active ? 1 : 0, 
-      categories: goal.categories || [], 
-    }
-  ));
+  const processedData = data.map(goal => ({
+    ...goal,
+    active: goal.active ? 1 : 0,
+    categories: goal.categories || []
+  }));
   return processedData;
 };
 // --- END REVISED FUNCTION ---
@@ -241,7 +239,7 @@ export const fetchDoneExercisesForMicrocycle = async (userId: string, microcycle
 
   const { data, error } = await supabase
     .from('done_exercises')
-    .select("*, goals(exercise_name)")
+    .select('*, goals(exercise_name)')
     .eq('user_id', userId)
     .eq('goal_microcycle_at_log', microcycleNumber)
     .order('logged_at', { ascending: false });

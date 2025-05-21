@@ -139,14 +139,14 @@ const PerformanceLogger: React.FC<PerformanceLoggerProps> = ({
             variant="outline" 
             onClick={onCancel}
             disabled={isSubmitting}
-            className="w-full sm:w-auto btn-outline-custom"
+            className="w-full sm:w-auto border-muted-foreground/30 text-foreground hover:bg-muted/50 hover:border-primary/50 transition-colors"
           >
             Cancelar
           </Button>
           <Button 
             onClick={handleSubmit} 
             disabled={isSubmitting || !performanceReps} // Reps are mandatory
-            className="w-full sm:w-auto btn-primary-custom"
+            className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
           >
             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null} 
             Registrar Set

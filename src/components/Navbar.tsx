@@ -30,18 +30,18 @@ const Navbar: React.FC = () => {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="text-xl font-semibold text-foreground hover:text-primary transition-colors">
-              TrainingApp
+              multitraining
             </Link>
           </div>
           <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-4">
             <NavLink
-              to="/"
+              to="/workout"
               end
               className={({ isActive }) =>
                 `p-2 sm:p-3 rounded-md transition-colors ${
                   isActive
-                    ? 'bg-primary text-primary-foreground navlink-subtle-active'
-                    : 'text-muted-foreground hover:text-primary hover:bg-accent'
+                    ? 'bg-accent text-muted-background navlink-subtle-active'
+                    : 'text-muted-background hover:text-muted-background hover:bg-accent'
                 }`
               }
               title="Workout"
@@ -56,8 +56,8 @@ const Navbar: React.FC = () => {
               className={({ isActive }) =>
                 `p-2 sm:p-3 rounded-md transition-colors ${
                   isActive
-                    ? 'bg-primary text-primary-foreground navlink-subtle-active'
-                    : 'text-muted-foreground hover:text-primary hover:bg-accent'
+                    ? 'bg-accent text-muted-background navlink-subtle-active'
+                    : 'text-muted-background hover:text-muted-background hover:bg-accent'
                 }`
               }
               title="Metas"

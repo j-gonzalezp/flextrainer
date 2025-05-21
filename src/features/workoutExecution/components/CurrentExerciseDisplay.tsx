@@ -1,86 +1,177 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import type { Goal } from '@/features/goalsManagement/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Replace } from 'lucide-react'; // Using Replace icon for "swap" or "change"
+import { Replace, Pause, Loader2 } from 'lucide-react';
+import ExerciseTimer from '@/components/ExerciseTimer';
+import type { TimerRef } from '@/components/ExerciseTimer';
 
 interface CurrentExerciseDisplayProps {
   goal: Goal | null;
   onChangeExerciseClick: () => void;
+  onPauseExerciseClick: () => void;
   isProcessingChange?: boolean;
+  isPausing?: boolean; // Added for button state
 }
 
-const CurrentExerciseDisplay: React.FC<CurrentExerciseDisplayProps> = ({ 
-  goal, 
+const CurrentExerciseDisplay: React.FC<CurrentExerciseDisplayProps> = ({
+  goal,
   onChangeExerciseClick,
-  isProcessingChange = false 
+  onPauseExerciseClick,
+  isProcessingChange = false,
+  isPausing = false, // Added for button state
 }) => {
+  const prevGoalIdRef = useRef<number | null | undefined>(goal?.id);
+  const timerRef = useRef<TimerRef | null>(null);
+
+  useEffect(() => {
+    const currentGoalId = goal?.id;
+    if (prevGoalIdRef.current !== currentGoalId) {
+      // console.log(`[CurrentExerciseDisplay] Goal ID changed from ${prevGoalIdRef.current} to ${currentGoalId}.`);
+      prevGoalIdRef.current = currentGoalId;
+    }
+
+    if (goal) {
+      console.log(
+        `[CurrentExerciseDisplay] Rendering for goal ID: ${currentGoalId}. Effective initial duration for timer: ${goal.duration_seconds}s`
+      );
+    } else {
+      console.log('[CurrentExerciseDisplay] Rendering with no goal.');
+    }
+  }, [goal]);
+
   if (!goal) {
     return null;
   }
 
+  const effectiveInitialDuration = goal.duration_seconds;
+
   const formatObjective = () => {
     let objective = `${goal.sets} series x ${goal.reps} reps`;
-    if (goal.weight !== null && goal.weight !== undefined && goal.weight > 0) {
+    if (goal.weight && goal.weight > 0) {
       objective += ` @ ${goal.weight}kg`;
     }
-    if (goal.duration_seconds !== null && goal.duration_seconds !== undefined && goal.duration_seconds > 0) {
+    if (goal.duration_seconds && goal.duration_seconds > 0) { // Assuming goal.duration_seconds is for display in objective
       objective += ` por ${goal.duration_seconds}s`;
     }
     return objective;
   };
 
   return (
-    <Card className="shadow-lg border-accent/30">
-      <CardHeader className="pb-4"> {/* Increased pb slightly for button */}
-        <div className="flex justify-between items-center gap-2"> {/* items-center */}
-          <div className="flex-grow">
-            <CardTitle className="text-2xl font-semibold text-primary leading-tight">
-              {goal.exercise_name || 'Ejercicio sin nombre'}
-            </CardTitle>
-            <CardDescription className="text-sm text-muted-foreground mt-1">
-              Objetivo: {formatObjective()}
-            </CardDescription>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-3.5 space-y-3.5">
-        {goal.notes && (
-          <div>
-            <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Notas:</h4>
-            <p className="text-sm text-foreground whitespace-pre-wrap bg-muted/50 p-1.5 rounded-md mt-1.5">{goal.notes}</p>
-          </div>
-        )}
-        {goal.categories && goal.categories.length > 0 && (
-          <div>
-            <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-1.5">Categorías:</h4>
-            <div className="flex flex-wrap gap-1.5">
-              {goal.categories.map((category, index) => (
-                <span 
-                  key={index} 
-                  className="px-2.5 py-0.5 text-xs bg-secondary text-secondary-foreground rounded-full font-medium"
-                >
-                  {category}
-                </span>
-              ))}
+    <Card className="shadow-lg border-accent/30 flex flex-col min-h-[180px]">
+      <div className="flex-grow flex flex-col">
+        <CardHeader className="pb-3">
+          <div className="flex justify-between items-start gap-4">
+            <div className="flex-grow">
+              <div className="flex items-center justify-between gap-2">
+                <CardTitle className="text-3xl font-bold tracking-tight">
+                  {goal.exercise_name || 'Ejercicio sin nombre'}
+                </CardTitle>
+                <div className="flex flex-col gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onChangeExerciseClick}
+                    aria-label="Cambiar ejercicio actual"
+                    disabled={isProcessingChange || isPausing}
+                    className="text-muted-foreground hover:bg-accent/10 w-24 justify-center"
+                  >
+                    <Replace className="h-4 w-4" />
+                    <span className="ml-1.5">Cambiar</span>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onPauseExerciseClick}
+                    disabled={isProcessingChange || isPausing}
+                    className="text-muted-foreground hover:bg-accent/10 w-24 justify-center"
+                  >
+                    {isPausing ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Pause className="h-4 w-4" />
+                    )}
+                    <span className="ml-1.5">Pausar</span>
+                  </Button>
+                </div>
+              </div>
+              <CardDescription className="text-base text-muted-foreground mt-2">
+                <span className="font-medium">Objetivo:</span> {formatObjective()}
+              </CardDescription>
             </div>
           </div>
-        )}
-        {/* More explicit button placed in CardContent for better flow */}
-        <div className="pt-2 text-right"> 
-          <Button 
-            variant="outline" // Shadcn outline button style
-            size="sm"         // Smaller button
-            onClick={onChangeExerciseClick} 
-            aria-label="Cambiar ejercicio actual"
-            disabled={isProcessingChange}
-            className="mt-1.5" // Margin top for spacing
-          >
-            <Replace className="mr-2 h-4 w-4" /> 
-            Cambiar Ejercicio
-          </Button>
-        </div>
-      </CardContent>
+        </CardHeader>
+
+        <CardContent className="flex-grow pt-1 pb-4 px-6">
+          <div className="flex flex-col h-full">
+            {goal.notes && (
+              <div className="mb-3">
+                <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-1.5">
+                  Notas:
+                </h4>
+                <p className="text-sm text-foreground whitespace-pre-wrap bg-muted/30 p-3 rounded-md">
+                  {goal.notes}
+                </p>
+              </div>
+            )}
+
+            {goal.duration_seconds !== null &&
+              goal.duration_seconds > 0 &&
+              effectiveInitialDuration !== null && (
+                <div className="mt-3">
+                  <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-1.5">
+                    Temporizador:
+                  </h4>
+                  <ExerciseTimer
+                    key={goal.id}
+                    goalId={goal.id}
+                    initialDurationSeconds={effectiveInitialDuration}
+                    onTimerPause={(remaining: number) => {
+                      console.log(
+                        `[CurrentExerciseDisplay] Timer for goal ${goal.id} paused internally. Remaining: ${remaining}s`
+                      );
+                    }}
+                    onTimerComplete={() => {
+                      console.log(
+                        `[CurrentExerciseDisplay] Timer for goal ${goal.id} completed.`
+                      );
+                    }}
+                    autoStart={false}
+                    controlRef={timerRef}
+                  />
+                </div>
+              )}
+
+            <div className={goal.notes ? 'mt-auto' : ''}>
+              {goal.categories && goal.categories.length > 0 ? (
+                <div>
+                  <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-1.5">
+                    Categorías:
+                  </h4>
+                  <div className="flex flex-wrap gap-1.5">
+                    {goal.categories.map((category, index) => (
+                      <span
+                        key={index}
+                        className="px-2.5 py-0.5 text-xs bg-secondary text-secondary-foreground rounded-full font-medium"
+                      >
+                        {category}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="h-6" />
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </div>
     </Card>
   );
 };

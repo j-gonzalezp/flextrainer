@@ -3,10 +3,10 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LoginSignup } from "./features/authentication";
 import { GoalsManagementPage } from './features/goalsManagement';
 import { WorkoutPage } from './features/workoutExecution';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import { Toaster } from '@/components/ui/sonner';
-import './index.css'
+import './index.css';
 
 const AppContent: React.FC = () => {
   const { user, loading } = useAuth();
@@ -21,42 +21,33 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
+      {user && <Navbar />}
       <div className="container mx-auto p-4.5 sm:p-6 lg:p-8 flex flex-col flex-grow">
-
         <main className="flex-grow">
-          {!user ? (
-            <div className="max-w-md mx-auto">
-              <LoginSignup />
-            </div>
-          ) : (
-            <>
-              <Navbar />
-              <div className="pt-4">
-                <Routes>
-                  <Route path="/" element={<WorkoutPage />} />
-                  <Route path="/goals" element={<GoalsManagementPage />} />
-
-
-                </Routes>
-              </div>
-
-
-            <Toaster />
-          </>
-          )}
+          <Routes>
+            {!user ? (
+              <Route path="/login" element={<LoginSignup />} />
+            ) : (
+              <>
+                <Route path="/" element={<Navigate to="/goals" replace />} />
+                <Route path="/goals" element={<GoalsManagementPage />} />
+                <Route path="/workout" element={<WorkoutPage />} />
+              </>
+            )}
+            <Route path="*" element={
+              user ? 
+              <Navigate to="/goals" replace /> : 
+              <Navigate to="/login" replace />
+            } />
+          </Routes>
         </main>
-
-        <footer className="text-center mt-5.5 py-4.5 border-t border-border">
-          <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Training App. Todos los derechos reservados.
-          </p>
-        </footer>
       </div>
+      <Toaster position="top-center" />
     </div>
   );
 };
 
-function App() {
+const App: React.FC = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
@@ -64,6 +55,6 @@ function App() {
       </AuthProvider>
     </BrowserRouter>
   );
-}
+};
 
 export default App;
