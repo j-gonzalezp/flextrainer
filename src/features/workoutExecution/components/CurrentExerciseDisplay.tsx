@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Replace, Pause, Loader2 } from 'lucide-react';
+import { Replace } from 'lucide-react';
 import ExerciseTimer from '@/components/ExerciseTimer';
 import type { TimerRef } from '@/components/ExerciseTimer';
 
@@ -27,7 +27,6 @@ interface CurrentExerciseDisplayProps {
 const CurrentExerciseDisplay: React.FC<CurrentExerciseDisplayProps> = ({
   goal,
   onChangeExerciseClick,
-  onPauseExerciseClick,
   isProcessingChange = false,
   isPausing = false, // Added for button state
   exerciseTimerControlRef, // Destructure the new prop
@@ -97,20 +96,6 @@ const CurrentExerciseDisplay: React.FC<CurrentExerciseDisplayProps> = ({
                   >
                     <Replace className="h-4 w-4" />
                     <span className="ml-1.5">Cambiar</span>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={onPauseExerciseClick}
-                    disabled={isProcessingChange || isPausing}
-                    className="text-muted-foreground hover:bg-accent/10 w-24 justify-center"
-                  >
-                    {isPausing ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Pause className="h-4 w-4" />
-                    )}
-                    <span className="ml-1.5">Pausar</span>
                   </Button>
                 </div>
               </div>

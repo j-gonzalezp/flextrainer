@@ -218,17 +218,17 @@ const ManageMesocycleModal: React.FC<ManageMesocycleModalProps> = ({
       ].filter(cat => cat && cat.trim() !== '');
 
       const goalDataForHook: GoalInsert = {
+        user_id: user.id,
         exercise_name: chosenEx.exercise_name,
         microcycle: targetMicrocycleNumber,
         categories: combinedCategories,
-        
         sets: typeof chosenEx.sets === 'number' ? chosenEx.sets : 0,
-        reps: typeof chosenEx.reps === 'number' ? chosenEx.reps : undefined,
-        weight: typeof chosenEx.weight === 'number' ? chosenEx.weight : (chosenEx.weight === null ? null : undefined),
-        duration_seconds: typeof chosenEx.duration_seconds === 'number' ? chosenEx.duration_seconds : (chosenEx.duration_seconds === null ? null : undefined),
-        notes: chosenEx.notes === '' ? undefined : chosenEx.notes,
-        exercise_library_id: chosenEx.library_exercise_id, // Add this based on the user's example
-        equipment_needed: chosenEx.equipment_needed || [], // <-- ADD THIS LINE, default to empty array
+        reps: typeof chosenEx.reps === 'number' ? chosenEx.reps : null,
+        weight: typeof chosenEx.weight === 'number' ? chosenEx.weight : null,
+        duration_seconds: typeof chosenEx.duration_seconds === 'number' ? chosenEx.duration_seconds : null,
+        notes: chosenEx.notes || null,
+        exercise_library_id: chosenEx.library_exercise_id || null,
+        equipment_needed: chosenEx.equipment_needed || [],
         active: chosenEx.active !== undefined ? chosenEx.active : 1,
       };
 

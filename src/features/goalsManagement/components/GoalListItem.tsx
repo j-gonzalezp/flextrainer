@@ -55,7 +55,7 @@ const GoalListItem: React.FC<GoalListItemProps> = ({
         <Switch
           id={`active-toggle-${goal.id}`}
           checked={goal.active === 1}
-          onCheckedChange={() => onToggleActive(goal.id, goal.active)}
+          onCheckedChange={() => onToggleActive(Number(goal.id), goal.active)}
           disabled={disabled}
           aria-label="Toggle goal active state"
         />
@@ -74,7 +74,7 @@ const GoalListItem: React.FC<GoalListItemProps> = ({
               <Edit2 className="mr-2 h-4 w-4" />
               Editar
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onDelete(goal.id)} disabled={disabled} className="text-destructive focus:bg-destructive focus:text-destructive-foreground">
+            <DropdownMenuItem onClick={() => onDelete(Number(goal.id))} disabled={disabled} className="text-destructive focus:bg-destructive focus:text-destructive-foreground">
               <Trash2 className="mr-2 h-4 w-4" />
               Borrar
             </DropdownMenuItem>

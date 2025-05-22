@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import * as workoutService from '../services/workoutService';
 import * as goalService from '@/features/goalsManagement/services/goalService';
-import type { Goal } from '@/features/goalsManagement/types';
+import type { Goal, GoalPerformance, DisplayableDoneExercise } from '@/features/goalsManagement/types';
 import type { DoneExerciseLogInsert } from '../types';
 import { toast } from 'sonner';
 import type { TimerRef } from '@/components/ExerciseTimer'; // Import TimerRef
@@ -26,6 +26,54 @@ const getUniqueEquipmentFromGoals = (goals: Goal[]): string[] => {
   return Array.from(new Set(allEquipment)).sort();
 };
 
+const calculatePerformanceForGoal = (goal: Goal, doneExercises: DisplayableDoneExercise[]): GoalPerformance => {
+  const relevantDoneExercises = doneExercises.filter(de => de.goal_id === goal.id);
+  let totalSetsCompleted = 0;
+  let totalRepsSum = 0;
+  let sumOfWeights = 0;
+  let totalVolumeLifted = 0;
+  let maxWeightAchievedInASet = 0;
+  let maxRepsAchievedInASet = 0;
+  let setsMeetingTarget = 0;
+
+  relevantDoneExercises.forEach(de => {
+    totalSetsCompleted += 1;
+    const reps = de.reps || 0;
+    const weight = de.weight_lifted || 0;
+
+    totalRepsSum += reps;
+    sumOfWeights += weight;
+    totalVolumeLifted += weight * reps;
+    maxWeightAchievedInASet = Math.max(maxWeightAchievedInASet, weight);
+    maxRepsAchievedInASet = Math.max(maxRepsAchievedInASet, reps);
+
+    if (reps >= (goal.reps || 0)) {
+      setsMeetingTarget++;
+    }
+  });
+
+  const averageRepsPerSet = totalSetsCompleted > 0 ? totalRepsSum / totalSetsCompleted : 0;
+  const averageWeightPerSet = totalSetsCompleted > 0 ? sumOfWeights / totalSetsCompleted : 0;
+
+  const wasCompleted = (totalSetsCompleted >= (goal.sets || 0)) && (averageRepsPerSet >= (goal.reps || 0));
+
+  return {
+    goalId: goal.id.toString(),
+    totalSetsCompleted: totalSetsCompleted,
+    totalRepsCompleted: totalRepsSum,
+    averageRepsPerSet: parseFloat(averageRepsPerSet.toFixed(1)),
+    averageWeightPerSet: parseFloat(averageWeightPerSet.toFixed(1)),
+    wasCompleted: wasCompleted,
+    setsMet: setsMeetingTarget,
+    repsMet: averageRepsPerSet,
+    totalVolumeLifted: parseFloat(totalVolumeLifted.toFixed(1)),
+    maxWeightAchievedInASet: parseFloat(maxWeightAchievedInASet.toFixed(1)),
+    maxRepsAchievedInASet: maxRepsAchievedInASet,
+    totalPlannedSets: goal.sets || 0,
+    totalPlannedReps: goal.reps || 0,
+  };
+};
+
 export const useWorkoutSession = () => {
   // Ref for the ExerciseTimer component's control functions
   const exerciseTimerControlRef = useRef<TimerRef | null>(null);
@@ -41,6 +89,7 @@ export const useWorkoutSession = () => {
   const [currentGoal, setCurrentGoal] = useState<Goal | null>(null);
   const currentGoalRef = useRef<Goal | null>(null);
   const [isLoadingGoals, setIsLoadingGoals] = useState<boolean>(false);
+  const [doneExercises, setDoneExercises] = useState<DisplayableDoneExercise[]>([]);
 
   const [setsDoneForCurrentGoal, setSetsDoneForCurrentGoal] = useState<number>(0);
 
@@ -71,7 +120,7 @@ export const useWorkoutSession = () => {
     return goals[randomIndex];
   }, []);
 
-  const _selectNextDistinctGoalFromList = useCallback((availableGoals: Goal[], lastGoalIdToExclude?: number): Goal | null => {
+  const _selectNextDistinctGoalFromList = useCallback((availableGoals: Goal[], lastGoalIdToExclude?: string): Goal | null => {
     const eligibleGoals = lastGoalIdToExclude ? availableGoals.filter(g => g.id !== lastGoalIdToExclude) : availableGoals;
     return _selectRandomGoalFromList(eligibleGoals);
   }, [_selectRandomGoalFromList]);
@@ -192,30 +241,46 @@ export const useWorkoutSession = () => {
       currentGoalRef.current = null;
       setAvailableCategories([]);
       setSelectedCategoryFilters([]);
-      setAvailableEquipment([]); // Clear equipment filters on new microcycle load
-      setSelectedEquipmentFilters([]); // Clear selected equipment filters
+      setAvailableEquipment([]);
+      setSelectedEquipmentFilters([]);
 
-      console.log('[useWorkoutSession] Fetching goals for microcycle:', selectedWorkoutMicrocycle); // Added log
+      console.log('[useWorkoutSession] Fetching goals and done exercises for microcycle:', selectedWorkoutMicrocycle);
 
-      workoutService.fetchActiveGoalsForWorkout(user.id, selectedWorkoutMicrocycle)
-        .then(fetchedGoals => {
-          setAllActiveGoalsForMicrocycle(fetchedGoals);
-          console.log('[useWorkoutSession] Fetched Goals:', fetchedGoals); // Added log
+      Promise.all([
+        workoutService.fetchActiveGoalsForWorkout(user.id, selectedWorkoutMicrocycle),
+        goalService.fetchDoneExercisesForMicrocycle(user.id, selectedWorkoutMicrocycle) // Fetch done exercises
+      ])
+        .then(([fetchedGoals, fetchedDoneExercises]) => {
+          setDoneExercises(fetchedDoneExercises); // Set done exercises state
+          console.log('[useWorkoutSession] Fetched Done Exercises:', fetchedDoneExercises);
+
+          // Calculate initial performance for all fetched goals
+          const goalsWithPerformance = fetchedGoals.map(goal => ({
+            ...goal,
+            performance: calculatePerformanceForGoal(goal, fetchedDoneExercises)
+          }));
+
+          setAllActiveGoalsForMicrocycle(goalsWithPerformance);
+          console.log('[useWorkoutSession] Fetched Goals with Performance:', goalsWithPerformance);
+
           const uniqueCategories = getUniqueCategoriesFromGoals(fetchedGoals);
           console.log('[useWorkoutSession] Derived Available Categories:', uniqueCategories);
           setAvailableCategories(uniqueCategories);
-          const uniqueEquipment = getUniqueEquipmentFromGoals(fetchedGoals); // Capture result
-          console.log('[useWorkoutSession] Derived Available Equipment:', uniqueEquipment); // NEW LOG
-          setAvailableEquipment(uniqueEquipment); // Use captured result
+          const uniqueEquipment = getUniqueEquipmentFromGoals(fetchedGoals);
+          console.log('[useWorkoutSession] Derived Available Equipment:', uniqueEquipment);
+          setAvailableEquipment(uniqueEquipment);
         })
         .catch(err => {
-          console.error('[useWorkoutSession] Error fetching active goals:', err);
-          setError('Failed to load active goals for the selected microcycle.');
+          console.error('[useWorkoutSession] Error fetching active goals or done exercises:', err);
+          setError('Failed to load active goals or done exercises for the selected microcycle.');
           setAllActiveGoalsForMicrocycle([]);
+          setDoneExercises([]); // Clear on error
           setAvailableCategories([]);
-          setAvailableEquipment([]); // Clear on error
+          setAvailableEquipment([]);
         })
-        .finally(() => setIsLoadingGoals(false));
+        .finally(() => {
+          setIsLoadingGoals(false);
+        });
     } else if (!selectedWorkoutMicrocycle) {
       setAllActiveGoalsForMicrocycle([]);
       setFilteredWorkoutGoals([]);
@@ -223,8 +288,9 @@ export const useWorkoutSession = () => {
       currentGoalRef.current = null;
       setAvailableCategories([]);
       setSelectedCategoryFilters([]);
-      setAvailableEquipment([]); // Clear on no microcycle selected
-      setSelectedEquipmentFilters([]); // Clear selected on no microcycle
+      setAvailableEquipment([]);
+      setSelectedEquipmentFilters([]);
+      setDoneExercises([]); // Clear done exercises
       prefillOrClearPerformanceInputs(null);
       setIsLoadingGoals(false);
     }
@@ -301,7 +367,7 @@ export const useWorkoutSession = () => {
   }, [isRestTimerRunning, restTimerSeconds]);
 
   // MODIFIED: Renamed proceedToNextGoal and changed its behavior
-  const _switchToNewRandomDistinctGoal = useCallback((idToExclude?: number) => {
+  const _switchToNewRandomDistinctGoal = useCallback((idToExclude?: string) => {
     const nextGoal = _selectNextDistinctGoalFromList(filteredWorkoutGoals, idToExclude);
 
     setCurrentGoal(nextGoal);
@@ -331,7 +397,7 @@ export const useWorkoutSession = () => {
   const skipCurrentGoalAndSelectNext = useCallback(() => {
     if (currentGoal) {
       toast.info(`Ejercicio ${currentGoal.exercise_name} omitido.`);
-      _switchToNewRandomDistinctGoal(currentGoal.id);
+      _switchToNewRandomDistinctGoal(currentGoal.id); // currentGoal.id is already a string
     } else {
       _switchToNewRandomDistinctGoal();
     }
@@ -371,8 +437,24 @@ export const useWorkoutSession = () => {
       await workoutService.logDoneExercise(logPayload);
       toast.success(`Set de ${goalLoggedName} registrado!`);
 
+      // Action A: Refresh doneExercises for the current microcycle
+      const updatedDoneExercises = await goalService.fetchDoneExercisesForMicrocycle(user.id, currentGoal.microcycle);
+      setDoneExercises(updatedDoneExercises); // Update the state with the latest done exercises
+
+      // Action B: Recalculate performance for the currentGoal
+      const newPerformanceData = calculatePerformanceForGoal(currentGoal, updatedDoneExercises);
+
+      // Action C: Update the currentGoal state with the new performance information
+      setCurrentGoal(prevGoal => {
+        if (!prevGoal) return null;
+        return {
+          ...prevGoal,
+          performance: newPerformanceData,
+        };
+      });
+
       setSetsDoneForCurrentGoal(prev => prev + 1);
-      _switchToNewRandomDistinctGoal(goalLoggedId);
+      _switchToNewRandomDistinctGoal(goalLoggedId); // goalLoggedId is already a string
 
       // Optional: Start rest timer after logging performance
       resetRestTimer(); // Reset to default duration
@@ -403,7 +485,7 @@ export const useWorkoutSession = () => {
       if (updatedGoal && updatedGoal.active === 0) {
         toast.info(`${pausedGoalName} pausado.`);
         setAllActiveGoalsForMicrocycle(prev => prev.filter(g => g.id !== pausedGoalId)); // Remove from session pool
-        _switchToNewRandomDistinctGoal(pausedGoalId); // Then pick a new one
+        _switchToNewRandomDistinctGoal(pausedGoalId); // Then pick a new one (pausedGoalId is already a string)
       } else {
         toast.error('Error al pausar.');
         setError('Failed to pause.');
@@ -537,6 +619,9 @@ export const useWorkoutSession = () => {
     pauseRestTimer,
     resetRestTimer,
     setRestTimerSeconds,
+    
+    // Done Exercises
+    doneExercises,
   };
 };
 

@@ -12,7 +12,7 @@ interface ExerciseTimerProps {
 }
 
 const ExerciseTimer = React.forwardRef<TimerRef | null, ExerciseTimerProps>( // Allow null in forwardRef type
-  ({ initialDurationSeconds, goalId, onTimerPause, onTimerComplete, onSoundTrigger, autoStart, controlRef }, ref) => {
+  ({ initialDurationSeconds, goalId, onTimerPause, onTimerComplete, onSoundTrigger, autoStart, controlRef }, _) => {
     const [timeLeft, setTimeLeft] = useState(initialDurationSeconds);
     const [isRunning, setIsRunning] = useState(autoStart && initialDurationSeconds > 0);
     const [isCompleted, setIsCompleted] = useState(initialDurationSeconds <= 0);

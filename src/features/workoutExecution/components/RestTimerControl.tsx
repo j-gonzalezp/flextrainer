@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 interface RestTimerControlProps {
@@ -27,7 +26,6 @@ const RestTimerControl: React.FC<RestTimerControlProps> = ({
   setRestTimerSeconds,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [tempValue, setTempValue] = useState('');
   const [inputMinutes, setInputMinutes] = useState('');
   const [inputSeconds, setInputSeconds] = useState('');
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -111,7 +109,7 @@ const RestTimerControl: React.FC<RestTimerControlProps> = ({
     }
   };
 
-  const handleInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+  const handleInputBlur = () => {
     console.log('👁️ Blur event triggered');
     // Only finish editing if focus is leaving the entire timer component
     setTimeout(() => {

@@ -1,0 +1,74 @@
+# Windsurf + Bifrost MCP Rules
+
+## CRITICAL: Always Use Bifrost Tools First
+
+You have access to Bifrost MCP tools that provide real-time VSCode language server capabilities. You MUST use these tools before any code analysis or modification.
+
+### Tool Usage Protocol:
+
+**STEP 1 - BEFORE ANY CODE WORK:**
+```
+Use get_document_symbols to understand the file structure
+Use get_workspace_symbols to search for related code
+Use get_hover_info on any symbol you're analyzing
+```
+
+**STEP 2 - BEFORE MODIFICATIONS:**
+```
+Use find_usages to see where symbols are used
+Use get_code_actions to see available refactoring options
+Use find_implementations for interfaces/abstract methods
+```
+
+**STEP 3 - FOR NAVIGATION:**
+```
+Use go_to_definition instead of guessing
+Use get_call_hierarchy to understand function relationships
+Use get_type_hierarchy for inheritance chains
+```
+
+### Mandatory Responses Format:
+
+When asked about code, ALWAYS respond like this:
+
+1. "Let me analyze this using Bifrost tools..."
+2. Use the appropriate MCP tools
+3. Present findings from the tools
+4. Then provide your analysis/suggestions
+
+### Examples of REQUIRED tool usage:
+
+**When asked "What does this function do?"**
+- Use `get_hover_info` on the function
+- Use `find_usages` to see how it's called
+- Use `get_document_symbols` to see context
+
+**When asked "Can I rename this variable?"**
+- Use `find_usages` to see all references
+- Use `get_code_actions` to check for rename refactoring
+- Show the results before suggesting changes
+
+**When asked "Where is this function defined?"**
+- Use `go_to_definition` tool instead of guessing
+
+### Error Handling:
+If Bifrost tools don't work:
+1. Check if the MCP server is running on port 8008
+2. Verify the file URI format is correct
+3. Ensure the extension is active in VSCode
+
+### Forbidden Behaviors:
+- Never analyze code without using the available tools first
+- Never suggest changes without checking find_usages
+- Never guess about definitions when go_to_definition is available
+- Never provide completions without checking get_completions
+
+## Project Context Integration
+
+When working on this project, remember:
+- This is a TypeScript/JavaScript codebase
+- Use workspace symbol search for cross-file analysis  
+- Always check hover info for type information
+- Use code actions for intelligent refactoring suggestions
+
+The goal is to leverage the full power of VSCode's language server through Bifrost, not work in isolation.
