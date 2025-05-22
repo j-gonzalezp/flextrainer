@@ -10,7 +10,7 @@ export const useGoalsManagement = () => {
   // State Variables
   const [microcycles, setMicrocycles] = useState<number[]>([]);
   const [selectedMicrocycle, setSelectedMicrocycle] = useState<number | null>(null);
-  const [isLoadingMicrocycles, setIsLoadingMicrocycles] = useState(false);
+  const [isLoadingMicrocycles, setIsLoadingMicrocycles] = useState(true);
 
   const [goals, setGoals] = useState<Goal[]>([]);
   const [isLoadingGoals, setIsLoadingGoals] = useState(false);
@@ -130,7 +130,6 @@ export const useGoalsManagement = () => {
   useEffect(() => {
     if (user?.id) {
       console.log('[useGoalsManagement] useEffect (fetch user microcycles): Triggered. User ID:', user.id);
-      setIsLoadingMicrocycles(true);
       setError(null);
 
       goalService.fetchMicrocyclesForUser(user.id)

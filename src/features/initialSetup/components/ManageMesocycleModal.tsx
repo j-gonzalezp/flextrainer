@@ -136,8 +136,9 @@ const ManageMesocycleModal: React.FC<ManageMesocycleModalProps> = ({
           exercise_name: exercise.exercise_name,
           is_custom: false,
           library_exercise_id: exercise.id,
+          equipment_needed: exercise.equipment_needed || [], // <-- ADD THIS LINE, default to empty array
           // *** CORRECCIÓN CLAVE: NO usar default_sets aquí, dejar que Step3 lo sugiera ***
-          sets: '', 
+          sets: '',
           reps: exercise.default_reps ?? '',
           weight: exercise.default_weight ?? '',
           duration_seconds: exercise.default_duration_seconds ?? '',
@@ -219,13 +220,15 @@ const ManageMesocycleModal: React.FC<ManageMesocycleModalProps> = ({
       const goalDataForHook: GoalInsert = {
         exercise_name: chosenEx.exercise_name,
         microcycle: targetMicrocycleNumber,
-        categories: combinedCategories.length > 0 ? combinedCategories : null, 
+        categories: combinedCategories,
         
-        sets: typeof chosenEx.sets === 'number' ? chosenEx.sets : 0, 
-        reps: typeof chosenEx.reps === 'number' ? chosenEx.reps : null,
-        weight: typeof chosenEx.weight === 'number' ? chosenEx.weight : null,
-        duration_seconds: typeof chosenEx.duration_seconds === 'number' ? chosenEx.duration_seconds : null,
-        notes: chosenEx.notes === '' ? null : chosenEx.notes,
+        sets: typeof chosenEx.sets === 'number' ? chosenEx.sets : 0,
+        reps: typeof chosenEx.reps === 'number' ? chosenEx.reps : undefined,
+        weight: typeof chosenEx.weight === 'number' ? chosenEx.weight : (chosenEx.weight === null ? null : undefined),
+        duration_seconds: typeof chosenEx.duration_seconds === 'number' ? chosenEx.duration_seconds : (chosenEx.duration_seconds === null ? null : undefined),
+        notes: chosenEx.notes === '' ? undefined : chosenEx.notes,
+        exercise_library_id: chosenEx.library_exercise_id, // Add this based on the user's example
+        equipment_needed: chosenEx.equipment_needed || [], // <-- ADD THIS LINE, default to empty array
         active: chosenEx.active !== undefined ? chosenEx.active : 1,
       };
 

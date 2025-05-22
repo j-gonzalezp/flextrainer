@@ -9,6 +9,7 @@ export interface Goal {
   microcycle: number;
   active: 0 | 1;
   categories?: string[];
+  equipment_needed?: string[];
   notes?: string | null;
   weight?: number | null;
   duration_seconds?: number | null;
@@ -18,10 +19,15 @@ export interface Goal {
   completedSetsCount?: number; // Added for displaying completed sets
 }
 
-export type GoalInsert = Omit<Goal, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'active'> & {
+export type GoalInsert = Omit<Goal, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'active' | 'equipment_needed' | 'notes' | 'weight' | 'duration_seconds' | 'reps'> & {
   user_id?: string;
   active?: 0 | 1;
   categories?: string[];
+  equipment_needed?: string[];
+  reps?: number;
+  notes?: string | null;
+  weight?: number | null;
+  duration_seconds?: number | null;
 };
 
 export type GoalUpdate = Partial<Omit<Goal, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'microcycle'>>;

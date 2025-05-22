@@ -18,6 +18,10 @@ interface CurrentExerciseDisplayProps {
   onPauseExerciseClick: () => void;
   isProcessingChange?: boolean;
   isPausing?: boolean; // Added for button state
+  exerciseTimerControlRef: React.RefObject<TimerRef | null>; // Add the new prop
+  onExerciseTimerComplete: () => void; // Add new prop
+  onExerciseTimerPause: (remaining: number) => void; // Add new prop
+  onExerciseTimerSoundTrigger: (type: 'complete') => void; // Add new prop
 }
 
 const CurrentExerciseDisplay: React.FC<CurrentExerciseDisplayProps> = ({
@@ -26,9 +30,14 @@ const CurrentExerciseDisplay: React.FC<CurrentExerciseDisplayProps> = ({
   onPauseExerciseClick,
   isProcessingChange = false,
   isPausing = false, // Added for button state
+  exerciseTimerControlRef, // Destructure the new prop
+  onExerciseTimerComplete, // Destructure new prop
+  onExerciseTimerPause, // Destructure new prop
+  onExerciseTimerSoundTrigger, // Destructure new prop
 }) => {
   const prevGoalIdRef = useRef<number | null | undefined>(goal?.id);
-  const timerRef = useRef<TimerRef | null>(null);
+  // Remove the local timerRef as we are now using the one from the hook
+  // const timerRef = useRef<TimerRef | null>(null);
 
   useEffect(() => {
     const currentGoalId = goal?.id;
@@ -121,9 +130,10 @@ const CurrentExerciseDisplay: React.FC<CurrentExerciseDisplayProps> = ({
               </div>
             )}
 
-            {goal.duration_seconds !== null &&
-              goal.duration_seconds > 0 &&
-              effectiveInitialDuration !== null && (
+
+            {typeof goal.duration_seconds === 'number' && // Check for number type
+             goal.duration_seconds > 0 &&
+             typeof effectiveInitialDuration === 'number' && ( // Check for number type
                 <div className="mt-3">
                   <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-1.5">
                     Temporizador:
@@ -132,18 +142,11 @@ const CurrentExerciseDisplay: React.FC<CurrentExerciseDisplayProps> = ({
                     key={goal.id}
                     goalId={goal.id}
                     initialDurationSeconds={effectiveInitialDuration}
-                    onTimerPause={(remaining: number) => {
-                      console.log(
-                        `[CurrentExerciseDisplay] Timer for goal ${goal.id} paused internally. Remaining: ${remaining}s`
-                      );
-                    }}
-                    onTimerComplete={() => {
-                      console.log(
-                        `[CurrentExerciseDisplay] Timer for goal ${goal.id} completed.`
-                      );
-                    }}
+                    onTimerPause={onExerciseTimerPause} // Pass the prop
+                    onTimerComplete={onExerciseTimerComplete} // Pass the prop
+                    onSoundTrigger={onExerciseTimerSoundTrigger} // Pass the prop
                     autoStart={false}
-                    controlRef={timerRef}
+                    controlRef={exerciseTimerControlRef} // Pass the prop here
                   />
                 </div>
               )}

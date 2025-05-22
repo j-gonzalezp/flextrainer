@@ -5,6 +5,7 @@ import * as goalService from '@/features/goalsManagement/services/goalService';
 import type { Goal } from '@/features/goalsManagement/types';
 import type { DoneExerciseLogInsert } from '../types';
 import { toast } from 'sonner';
+import type { TimerRef } from '@/components/ExerciseTimer'; // Import TimerRef
 
 export interface SetData {
   reps: string;
@@ -20,7 +21,15 @@ const getUniqueCategoriesFromGoals = (goals: Goal[]): string[] => {
   return Array.from(new Set(allCategories)).sort();
 };
 
+const getUniqueEquipmentFromGoals = (goals: Goal[]): string[] => {
+  const allEquipment = goals.flatMap(goal => goal.equipment_needed || []);
+  return Array.from(new Set(allEquipment)).sort();
+};
+
 export const useWorkoutSession = () => {
+  // Ref for the ExerciseTimer component's control functions
+  const exerciseTimerControlRef = useRef<TimerRef | null>(null);
+
   const { user } = useAuth();
 
   const [userMicrocycles, setUserMicrocycles] = useState<number[]>([]);
@@ -36,13 +45,21 @@ export const useWorkoutSession = () => {
   const [setsDoneForCurrentGoal, setSetsDoneForCurrentGoal] = useState<number>(0);
 
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  const [currentExerciseTimerRemaining, setCurrentExerciseTimerRemaining] = useState<number | null>(null); // New state
   const [selectedCategoryFilters, setSelectedCategoryFilters] = useState<string[]>([]);
+  const [availableEquipment, setAvailableEquipment] = useState<string[]>([]);
+  const [selectedEquipmentFilters, setSelectedEquipmentFilters] = useState<string[]>([]);
 
   const [performanceReps, setPerformanceReps] = useState<string>('');
   const [performanceFailedSet, setPerformanceFailedSet] = useState<boolean>(false);
   const [performanceWeight, setPerformanceWeight] = useState<string>('');
   const [performanceDuration, setPerformanceDuration] = useState<string>('');
   const [performanceNotes, setPerformanceNotes] = useState<string>('');
+
+  // Rest Timer state
+  const [restTimerSeconds, setRestTimerSeconds] = useState<number>(30); // initial default
+  const [isRestTimerRunning, setIsRestTimerRunning] = useState<boolean>(false);
+  const restIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const [isLoggingPerformance, setIsLoggingPerformance] = useState<boolean>(false);
   const [isPausingGoal, setIsPausingGoal] = useState<boolean>(false);
@@ -61,10 +78,15 @@ export const useWorkoutSession = () => {
 
   const prefillOrClearPerformanceInputs = useCallback((goalToPreload: Goal | null) => {
     if (goalToPreload) {
-      setPerformanceReps(goalToPreload.reps?.toString() || '');
+      if (goalToPreload.reps !== undefined && goalToPreload.reps !== null) {
+        setPerformanceReps('1');
+      } else {
+        setPerformanceReps('');
+      }
       setPerformanceWeight(goalToPreload.weight?.toString() || '');
-      setPerformanceDuration(goalToPreload.duration_seconds?.toString() || '');
-      setPerformanceNotes(goalToPreload.notes || '');
+      // setPerformanceDuration(goalToPreload.duration_seconds?.toString() || ''); // Duration is now pre-filled by handleOpenPerformanceLoggerModal
+      setPerformanceDuration(''); // Ensure it's empty by default here
+      setPerformanceNotes('');
       setPerformanceFailedSet(false);
     } else {
       setPerformanceReps('');
@@ -72,6 +94,48 @@ export const useWorkoutSession = () => {
       setPerformanceWeight('');
       setPerformanceDuration('');
       setPerformanceNotes('');
+    }
+  }, []);
+
+  // Rest Timer functions
+  const startRestTimer = useCallback(() => {
+    if (restTimerSeconds > 0 && !isRestTimerRunning) {
+      setIsRestTimerRunning(true);
+      // Optionally play a start sound
+      // new Audio('/sounds/rest-start.mp3').play(); // New sound file needed
+    }
+  }, [restTimerSeconds, isRestTimerRunning]);
+
+  const pauseRestTimer = useCallback(() => {
+    setIsRestTimerRunning(false);
+  }, []);
+
+  const resetRestTimer = useCallback((newDuration?: number) => {
+    if (restIntervalRef.current) {
+      clearInterval(restIntervalRef.current);
+      restIntervalRef.current = null;
+    }
+    setRestTimerSeconds(newDuration !== undefined ? newDuration : 30); // Reset to default or new duration
+    setIsRestTimerRunning(false);
+  }, []);
+
+
+  const handleExerciseTimerPause = useCallback((remaining: number) => {
+    console.log(`[useWorkoutSession] Timer paused with ${remaining}s remaining.`);
+    setCurrentExerciseTimerRemaining(remaining);
+  }, []);
+
+  const handleExerciseTimerComplete = useCallback(() => {
+    console.log('[useWorkoutSession] Timer completed.');
+    setCurrentExerciseTimerRemaining(0);
+    // TODO: Add logic for automatic next exercise or notification
+  }, []);
+
+  const handleExerciseTimerSoundTrigger = useCallback((type: 'complete') => {
+    console.log(`[useWorkoutSession] Sound trigger: ${type}`);
+    if (type === 'complete') {
+      // Ensure the sound file path is correct and the file exists in the public/sounds/ directory.
+      new Audio('/sounds/timer-complete.mp3').play().catch(e => console.error("Error playing sound:", e));
     }
   }, []);
 
@@ -128,17 +192,28 @@ export const useWorkoutSession = () => {
       currentGoalRef.current = null;
       setAvailableCategories([]);
       setSelectedCategoryFilters([]);
+      setAvailableEquipment([]); // Clear equipment filters on new microcycle load
+      setSelectedEquipmentFilters([]); // Clear selected equipment filters
+
+      console.log('[useWorkoutSession] Fetching goals for microcycle:', selectedWorkoutMicrocycle); // Added log
 
       workoutService.fetchActiveGoalsForWorkout(user.id, selectedWorkoutMicrocycle)
         .then(fetchedGoals => {
           setAllActiveGoalsForMicrocycle(fetchedGoals);
-          setAvailableCategories(getUniqueCategoriesFromGoals(fetchedGoals));
+          console.log('[useWorkoutSession] Fetched Goals:', fetchedGoals); // Added log
+          const uniqueCategories = getUniqueCategoriesFromGoals(fetchedGoals);
+          console.log('[useWorkoutSession] Derived Available Categories:', uniqueCategories);
+          setAvailableCategories(uniqueCategories);
+          const uniqueEquipment = getUniqueEquipmentFromGoals(fetchedGoals); // Capture result
+          console.log('[useWorkoutSession] Derived Available Equipment:', uniqueEquipment); // NEW LOG
+          setAvailableEquipment(uniqueEquipment); // Use captured result
         })
         .catch(err => {
           console.error('[useWorkoutSession] Error fetching active goals:', err);
           setError('Failed to load active goals for the selected microcycle.');
           setAllActiveGoalsForMicrocycle([]);
           setAvailableCategories([]);
+          setAvailableEquipment([]); // Clear on error
         })
         .finally(() => setIsLoadingGoals(false));
     } else if (!selectedWorkoutMicrocycle) {
@@ -148,6 +223,8 @@ export const useWorkoutSession = () => {
       currentGoalRef.current = null;
       setAvailableCategories([]);
       setSelectedCategoryFilters([]);
+      setAvailableEquipment([]); // Clear on no microcycle selected
+      setSelectedEquipmentFilters([]); // Clear selected on no microcycle
       prefillOrClearPerformanceInputs(null);
       setIsLoadingGoals(false);
     }
@@ -157,11 +234,13 @@ export const useWorkoutSession = () => {
   useEffect(() => {
     if (isLoadingGoals) return;
     
-    const newFilteredGoals = selectedCategoryFilters.length === 0
-      ? [...allActiveGoalsForMicrocycle]
-      : allActiveGoalsForMicrocycle.filter(goal => 
-          goal.categories?.some(cat => selectedCategoryFilters.includes(cat))
-        );
+    const newFilteredGoals = allActiveGoalsForMicrocycle.filter(goal => {
+      const matchesCategories = selectedCategoryFilters.length === 0 ||
+                                goal.categories?.some(cat => selectedCategoryFilters.includes(cat));
+      const matchesEquipment = selectedEquipmentFilters.length === 0 ||
+                               goal.equipment_needed?.some(eq => selectedEquipmentFilters.includes(eq)); // NEW
+      return matchesCategories && matchesEquipment;
+    });
     
     setFilteredWorkoutGoals(newFilteredGoals);
 
@@ -185,7 +264,41 @@ export const useWorkoutSession = () => {
       prefillOrClearPerformanceInputs(null);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allActiveGoalsForMicrocycle, selectedCategoryFilters, isLoadingGoals]);
+  }, [allActiveGoalsForMicrocycle, selectedCategoryFilters, selectedEquipmentFilters, isLoadingGoals]); // Added selectedEquipmentFilters to dependencies
+
+  // Effect 4: Rest Timer Countdown
+  useEffect(() => {
+    if (isRestTimerRunning && restTimerSeconds > 0) {
+      restIntervalRef.current = setInterval(() => {
+        setRestTimerSeconds(prevTime => {
+          const newTime = prevTime - 1;
+          if (newTime <= 0) {
+            if (restIntervalRef.current) {
+              clearInterval(restIntervalRef.current);
+              restIntervalRef.current = null;
+            }
+            setIsRestTimerRunning(false);
+            new Audio('/sounds/rest-complete.mp3').play().catch(e => console.error("Error playing rest complete sound:", e)); // New sound file needed
+            return 0;
+          }
+          return newTime;
+        });
+      }, 1000);
+    } else if (restTimerSeconds <= 0 && isRestTimerRunning) { // If timer completes while running
+        setIsRestTimerRunning(false); // Ensure state is correct
+        new Audio('/sounds/rest-complete.mp3').play().catch(e => console.error("Error playing rest complete sound:", e));
+    } else if (!isRestTimerRunning && restIntervalRef.current) { // If paused or reset
+      clearInterval(restIntervalRef.current);
+      restIntervalRef.current = null;
+    }
+
+    return () => { // Cleanup
+      if (restIntervalRef.current) {
+        clearInterval(restIntervalRef.current);
+        restIntervalRef.current = null;
+      }
+    };
+  }, [isRestTimerRunning, restTimerSeconds]);
 
   // MODIFIED: Renamed proceedToNextGoal and changed its behavior
   const _switchToNewRandomDistinctGoal = useCallback((idToExclude?: number) => {
@@ -207,6 +320,10 @@ export const useWorkoutSession = () => {
     setSelectedCategoryFilters(categories);
   }, []);
 
+  const handleSelectEquipmentFilters = useCallback((equipment: string[]) => {
+    setSelectedEquipmentFilters(equipment);
+  }, []);
+
   const selectWorkoutMicrocycleHandler = useCallback((cycleNumber: number | null) => {
     setSelectedWorkoutMicrocycle(cycleNumber);
   }, []);
@@ -226,10 +343,11 @@ export const useWorkoutSession = () => {
       return;
     }
     
-    if (!recordedSet || !recordedSet.reps) {
-      toast.error('Error: Las repeticiones son obligatorias.');
-      return;
-    }
+    // Validation is now handled in PerformanceLogger.tsx
+    // if (!recordedSet || !recordedSet.reps) {
+    //   toast.error('Error: Las repeticiones son obligatorias.');
+    //   return;
+    // }
 
     const goalLoggedId = currentGoal.id;
     const goalLoggedName = currentGoal.exercise_name;
@@ -242,7 +360,7 @@ export const useWorkoutSession = () => {
         user_id: user.id,
         goal_id: goalLoggedId,
         goal_microcycle_at_log: currentGoal.microcycle,
-        reps_done: parseInt(recordedSet.reps, 10),
+        reps_done: parseInt(recordedSet.reps, 10) || 0, // Ensure conversion handles empty string
         sets_done_for_this_log: 1,
         failed_set: recordedSet.failed,
         weight_used: recordedSet.weight ? parseFloat(recordedSet.weight) : null,
@@ -255,6 +373,10 @@ export const useWorkoutSession = () => {
 
       setSetsDoneForCurrentGoal(prev => prev + 1);
       _switchToNewRandomDistinctGoal(goalLoggedId);
+
+      // Optional: Start rest timer after logging performance
+      resetRestTimer(); // Reset to default duration
+      startRestTimer(); // Start the timer
     } catch (err: any) {
       const msg = (err as Error).message || 'Error al registrar';
       setError(msg);
@@ -308,6 +430,7 @@ export const useWorkoutSession = () => {
         ...currentGoal,
         exercise_name: newSelectedGoalDetails.exercise_name,
         categories: newSelectedGoalDetails.categories || [],
+        equipment_needed: newSelectedGoalDetails.equipment_needed || [], // Ensure equipment is passed
         reps: newSelectedGoalDetails.reps,
         sets: newSelectedGoalDetails.sets,
         weight: newSelectedGoalDetails.weight,
@@ -326,6 +449,7 @@ export const useWorkoutSession = () => {
         sets: newSelectedGoalDetails.sets,
         reps: newSelectedGoalDetails.reps,
         categories: newSelectedGoalDetails.categories || [],
+        equipment_needed: newSelectedGoalDetails.equipment_needed || [], // Ensure equipment is passed
         weight: newSelectedGoalDetails.weight,
         duration_seconds: newSelectedGoalDetails.duration_seconds,
         notes: newSelectedGoalDetails.notes,
@@ -340,6 +464,30 @@ export const useWorkoutSession = () => {
     toast.info(`Ejercicio cambiado a: ${tempReplacedGoal.exercise_name}`);
   }, [currentGoal, prefillOrClearPerformanceInputs, user, selectedWorkoutMicrocycle]);
 
+  const handleOpenPerformanceLoggerModal = useCallback(() => {
+    console.log('[useWorkoutSession] handleOpenPerformanceLoggerModal called');
+    // Capture remaining time from the timer ref
+    const timeLeftFromTimer = exerciseTimerControlRef.current?.getTimeLeft();
+
+    if (timeLeftFromTimer !== undefined && timeLeftFromTimer > 0) {
+      console.log(`[useWorkoutSession] Pre-filling duration with timer remaining time: ${timeLeftFromTimer}s`);
+      setPerformanceDuration(Math.ceil(timeLeftFromTimer).toString()); // Use remaining time from timer
+    } else if (currentGoal?.duration_seconds && currentGoal.duration_seconds > 0) {
+      console.log(`[useWorkoutSession] No active timer or time left, pre-filling duration with goal duration: ${currentGoal.duration_seconds}s`);
+      // Fallback to goal duration if no valid time from timer
+      setPerformanceDuration(currentGoal.duration_seconds.toString());
+    }
+    else {
+      console.log('[useWorkoutSession] No timer or goal duration, clearing duration.');
+      setPerformanceDuration(''); // Clear if no timer or duration goal
+    }
+
+    // Optionally pause the timer when the modal opens
+    exerciseTimerControlRef.current?.pause();
+
+    // The modal open state is handled by the DialogTrigger in WorkoutPage.tsx
+  }, [exerciseTimerControlRef, setPerformanceDuration, currentGoal?.duration_seconds]);
+
   return {
     user,
     userMicrocycles,
@@ -353,6 +501,9 @@ export const useWorkoutSession = () => {
     availableCategories,
     selectedCategoryFilters,
     handleSelectCategoryFilters,
+    availableEquipment,
+    selectedEquipmentFilters,
+    handleSelectEquipmentFilters,
     performanceReps,
     setPerformanceReps,
     performanceFailedSet,
@@ -372,5 +523,21 @@ export const useWorkoutSession = () => {
     handleLogPerformance,
     handlePauseCurrentGoal,
     handleChangeCurrentGoal,
+    handleOpenPerformanceLoggerModal, // Expose the new function
+    exerciseTimerControlRef, // Expose the ref for the timer component
+    currentExerciseTimerRemaining, // Expose new state
+    handleExerciseTimerPause, // Expose new handler
+    handleExerciseTimerComplete, // Expose new handler
+    handleExerciseTimerSoundTrigger, // Expose new handler
+
+    // Rest Timer additions
+    restTimerSeconds,
+    isRestTimerRunning,
+    startRestTimer,
+    pauseRestTimer,
+    resetRestTimer,
+    setRestTimerSeconds,
   };
 };
+
+export default useWorkoutSession;

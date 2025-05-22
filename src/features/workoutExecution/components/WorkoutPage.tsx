@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { useWorkoutSession } from '../hooks/useWorkoutSession';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Loader2, ChevronDown, ChevronUp } from 'lucide-react';
@@ -11,6 +10,7 @@ import CurrentExerciseDisplay from './CurrentExerciseDisplay';
 import PerformanceLogger from './PerformanceLogger';
 import type { SetData as PerformanceLoggerSetData } from './PerformanceLogger';
 import ChangeExerciseModal from './ChangeExerciseModal';
+import RestTimerControl from './RestTimerControl'; // Import RestTimerControl
 import type { Goal } from '@/features/goalsManagement/types';
 
 const WorkoutPage: React.FC = () => {
@@ -18,13 +18,16 @@ const WorkoutPage: React.FC = () => {
     userMicrocycles,
     selectedWorkoutMicrocycle,
     isLoadingMicrocycles,
-    selectWorkoutMicrocycle, 
+    selectWorkoutMicrocycle,
     currentGoal,
     isLoadingGoals,
     error,
     availableCategories,
     selectedCategoryFilters,
     handleSelectCategoryFilters,
+    availableEquipment,
+    selectedEquipmentFilters,
+    handleSelectEquipmentFilters,
     performanceReps, setPerformanceReps,
     performanceFailedSet, setPerformanceFailedSet,
     performanceWeight, setPerformanceWeight,
@@ -35,12 +38,26 @@ const WorkoutPage: React.FC = () => {
     handleLogPerformance,
     handlePauseCurrentGoal,
     handleChangeCurrentGoal,
+    handleOpenPerformanceLoggerModal, // Import the new function
+    exerciseTimerControlRef, // Import the ref
+    handleExerciseTimerPause, // Import new handler
+    handleExerciseTimerComplete, // Import new handler
+    handleExerciseTimerSoundTrigger, // Import new handler
+
+    // Rest Timer imports
+    restTimerSeconds,
+    isRestTimerRunning,
+    startRestTimer,
+    pauseRestTimer,
+    resetRestTimer,
+    setRestTimerSeconds,
   } = useWorkoutSession();
 
   const [controlesVisibles, setControlesVisibles] = React.useState(true);
-  const [mostrarFormularioRendimiento, setMostrarFormularioRendimiento] = React.useState(false);
+  const [isPerformanceLoggerModalOpen, setIsPerformanceLoggerModalOpen] = React.useState(false);
   const [isMicrocycleModalOpen, setIsMicrocycleModalOpen] = React.useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = React.useState(false);
+  const [isEquipmentModalOpen, setIsEquipmentModalOpen] = React.useState(false);
   const [isChangeExerciseModalOpen, setIsChangeExerciseModalOpen] = React.useState(false);
 
   const currentGoalRef = React.useRef(currentGoal);
@@ -54,19 +71,30 @@ const WorkoutPage: React.FC = () => {
     }
     handleSelectCategoryFilters(newFilters);
   };
-  
+
   const handleOpenChangeExerciseModal = () => {
     setIsChangeExerciseModalOpen(true);
   };
 
-  React.useEffect(() => { /* Effect logic */ }, [currentGoal, isLoggingPerformance, isPausingGoal, mostrarFormularioRendimiento]);
-  
+  React.useEffect(() => { /* Effect logic */ }, [currentGoal, isLoggingPerformance, isPausingGoal, isPerformanceLoggerModalOpen]);
+
   React.useEffect(() => {
       if (!currentGoal || (currentGoal && currentGoal.id !== (currentGoalRef.current?.id || null))) {
-          setMostrarFormularioRendimiento(false);
+          setIsPerformanceLoggerModalOpen(false);
       }
       currentGoalRef.current = currentGoal;
   }, [currentGoal]);
+
+  console.log('--- WorkoutPage Category Filter Check ---'); // Added log
+  console.log('selectedWorkoutMicrocycle:', selectedWorkoutMicrocycle); // Added log
+  console.log('isLoadingGoals:', isLoadingGoals); // Added log
+  console.log('availableCategories:', availableCategories); // Added log
+  console.log('availableCategories.length:', availableCategories.length); // Added log
+  console.log('availableEquipment:', availableEquipment); // ADD THIS LOG
+  console.log('availableEquipment.length:', availableEquipment.length); // ADD THIS LOG
+  console.log('availableEquipment:', availableEquipment); // ADD THIS LOG
+  console.log('availableEquipment.length:', availableEquipment.length); // ADD THIS LOG
+  console.log('--- End WorkoutPage Category Filter Check ---'); // Added log
 
   if (isLoadingMicrocycles && !selectedWorkoutMicrocycle) { return <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)]"><Loader2 className="h-12 w-12 animate-spin text-primary mb-4" /><p className="text-lg text-muted-foreground">Cargando microciclos...</p></div>; }
   if (selectedWorkoutMicrocycle !== null && isLoadingGoals) { return <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)]"><Loader2 className="h-12 w-12 animate-spin text-primary mb-4" /><p className="text-lg text-muted-foreground">Cargando ejercicios...</p></div>; }
@@ -77,44 +105,79 @@ const WorkoutPage: React.FC = () => {
     <div className="max-w-xl mx-auto p-4.5 space-y-6 pb-20 animate-fade-in-up">
       {selectedWorkoutMicrocycle !== null && !isLoadingGoals && !error && (
         <div className="space-y-6">
+          {/* Rest Timer Control */}
+          <RestTimerControl
+            restTimerSeconds={restTimerSeconds}
+            isRestTimerRunning={isRestTimerRunning}
+            startRestTimer={startRestTimer}
+            pauseRestTimer={pauseRestTimer}
+            resetRestTimer={resetRestTimer}
+            setRestTimerSeconds={setRestTimerSeconds}
+          />
+
           {currentGoal ? (
             <>
-              <CurrentExerciseDisplay 
-                goal={currentGoal} 
+              <CurrentExerciseDisplay
+                goal={currentGoal}
                 onChangeExerciseClick={handleOpenChangeExerciseModal}
-                isProcessingChange={isChangeExerciseModalOpen} 
+                isProcessingChange={isChangeExerciseModalOpen}
+                exerciseTimerControlRef={exerciseTimerControlRef} // Pass the ref
+                onExerciseTimerPause={handleExerciseTimerPause} // Pass the handler
+                onExerciseTimerComplete={handleExerciseTimerComplete} // Pass the handler
+                onExerciseTimerSoundTrigger={handleExerciseTimerSoundTrigger} // Pass the handler
+                onPauseExerciseClick={handlePauseCurrentGoal}
               />
-              {mostrarFormularioRendimiento && (
-                <PerformanceLogger
-                  goal={currentGoal}
-                  performanceReps={performanceReps} setPerformanceReps={setPerformanceReps}
-                  performanceFailedSet={performanceFailedSet} setPerformanceFailedSet={setPerformanceFailedSet}
-                  performanceWeight={performanceWeight} setPerformanceWeight={setPerformanceWeight}
-                  performanceDuration={performanceDuration} setPerformanceDuration={setPerformanceDuration}
-                  performanceNotes={performanceNotes} setPerformanceNotes={setPerformanceNotes}
-                  isSubmitting={isLoggingPerformance || isPausingGoal}
-                  onLogSubmit={(setLogged: PerformanceLoggerSetData) => { handleLogPerformance(setLogged); }}
-                  onCancel={() => setMostrarFormularioRendimiento(false)}
-                />
-              )}
-              {!mostrarFormularioRendimiento && (
-                <div className="space-y-3">
-                  <Button onClick={() => setMostrarFormularioRendimiento(true)} disabled={isLoggingPerformance || isPausingGoal || !currentGoal} variant="default" size="lg" className="w-full border">
-                    Hecho / Registrar Set
-                  </Button>
-                  <div className="grid grid-cols-2 gap-3">
-                    <Button onClick={handlePauseCurrentGoal} variant="outline" disabled={isLoggingPerformance || isPausingGoal || !currentGoal} className="w-full">
-                      {isPausingGoal ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}Pausar Ejercicio
+              <Dialog open={isPerformanceLoggerModalOpen} onOpenChange={setIsPerformanceLoggerModalOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Registrar Set: {currentGoal?.exercise_name || 'Ejercicio Actual'}</DialogTitle>
+                    <CardDescription>Anota los detalles del set que realizaste.</CardDescription>
+                  </DialogHeader>
+                  <PerformanceLogger
+                    goal={currentGoal}
+                    performanceReps={performanceReps} setPerformanceReps={setPerformanceReps}
+                    performanceFailedSet={performanceFailedSet} setPerformanceFailedSet={setPerformanceFailedSet}
+                    performanceWeight={performanceWeight} setPerformanceWeight={setPerformanceWeight}
+                    performanceDuration={performanceDuration} setPerformanceDuration={setPerformanceDuration}
+                    performanceNotes={performanceNotes} setPerformanceNotes={setPerformanceNotes}
+                    isSubmitting={isLoggingPerformance || isPausingGoal}
+                    onLogSubmit={(setLogged: PerformanceLoggerSetData) => { handleLogPerformance(setLogged); setIsPerformanceLoggerModalOpen(false); }}
+                    onCancel={() => setIsPerformanceLoggerModalOpen(false)}
+                  />
+                </DialogContent>
+{/* DialogTrigger for Performance Logger */}
+              <DialogTrigger asChild>
+                {!isPerformanceLoggerModalOpen && ( // Only show the button if the modal is not open
+                  <div className="space-y-3">
+                    <Button
+                      disabled={isLoggingPerformance || isPausingGoal || !currentGoal}
+                      variant="default"
+                      size="lg"
+                      className="w-full border"
+                      onClick={() => { // Add onClick handler
+                        handleOpenPerformanceLoggerModal();
+                        // setIsPerformanceLoggerModalOpen(true); // This is handled by DialogTrigger
+                      }}
+                    >
+                      Hecho / Registrar Set
                     </Button>
-                    <Button onClick={selectNextGoal} variant="secondary" disabled={isLoggingPerformance || isPausingGoal || !currentGoal} className="w-full border border-input hover:bg-accent">
-                      Siguiente / Omitir
-                    </Button>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button onClick={handlePauseCurrentGoal} variant="outline" disabled={isLoggingPerformance || isPausingGoal || !currentGoal} className="w-full">
+                        {isPausingGoal ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}Pausar Ejercicio
+                      </Button>
+                      <Button onClick={selectNextGoal} variant="secondary" disabled={isLoggingPerformance || isPausingGoal || !currentGoal} className="w-full border border-input hover:bg-accent">
+                        Siguiente / Omitir
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </DialogTrigger>
+              </Dialog>
+              {/* DialogTrigger for Performance Logger */}
+              
             </>
-          ) : ( 
-             selectedWorkoutMicrocycle !== null && !isLoadingGoals && ( 
+          ) : (
+             selectedWorkoutMicrocycle !== null && !isLoadingGoals && (
                 <Card className="w-full max-w-lg mx-auto text-center mt-6">
                 <CardHeader><CardTitle>¡Workout del Microciclo {selectedWorkoutMicrocycle} Completado!</CardTitle></CardHeader>
                 <CardContent>
@@ -134,7 +197,7 @@ const WorkoutPage: React.FC = () => {
       {selectedWorkoutMicrocycle !== null && !isLoadingGoals && availableCategories.length === 0 && !currentGoal && ( <Card className="w-full max-w-lg mx-auto text-center mt-6"><CardHeader><CardTitle>Microciclo {selectedWorkoutMicrocycle} Vacío</CardTitle></CardHeader><CardContent><p>No hay ejercicios.</p></CardContent></Card>)}
       {selectedWorkoutMicrocycle === null && !isLoadingMicrocycles && userMicrocycles.length > 0 && ( <div className="text-center py-8 mt-6"><p>Selecciona un microciclo.</p>{!controlesVisibles && (<Button onClick={() => setControlesVisibles(true)} className="mt-4">Mostrar Controles</Button>)}</div>)}
 
-      {isChangeExerciseModalOpen && ( 
+      {isChangeExerciseModalOpen && (
         <ChangeExerciseModal
           isOpen={isChangeExerciseModalOpen}
           onClose={() => setIsChangeExerciseModalOpen(false)}
@@ -169,10 +232,10 @@ const WorkoutPage: React.FC = () => {
                     className="w-full justify-start text-left font-normal mt-1"
                     disabled={isLoadingMicrocycles || isLoadingGoals}
                   >
-                    {selectedWorkoutMicrocycle !== null 
-                      ? `Microciclo ${selectedWorkoutMicrocycle}` 
-                      : (isLoadingMicrocycles && userMicrocycles.length === 0 
-                          ? <span className="flex items-center"><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Cargando...</span> 
+                    {selectedWorkoutMicrocycle !== null
+                      ? `Microciclo ${selectedWorkoutMicrocycle}`
+                      : (isLoadingMicrocycles && userMicrocycles.length === 0
+                          ? <span className="flex items-center"><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Cargando...</span>
                           : '-- Elige un microciclo --')}
                   </Button>
                 </DialogTrigger>
@@ -190,9 +253,9 @@ const WorkoutPage: React.FC = () => {
                       userMicrocycles.map(mc => (
                         <Button
                           key={mc}
-                          variant={selectedWorkoutMicrocycle === mc ? "default" : "ghost"} 
+                          variant={selectedWorkoutMicrocycle === mc ? "default" : "ghost"}
                           onClick={() => {
-                            selectWorkoutMicrocycle(mc); 
+                            selectWorkoutMicrocycle(mc);
                             setIsMicrocycleModalOpen(false);
                           }}
                           className="w-full justify-start h-9 text-sm"
@@ -205,11 +268,11 @@ const WorkoutPage: React.FC = () => {
                     )}
                   </div>
                   {userMicrocycles.length > 0 && (
-                    <Button 
+                    <Button
                         variant={"link"}
                         size="sm"
                         onClick={() => {
-                            selectWorkoutMicrocycle(null); 
+                            selectWorkoutMicrocycle(null);
                             setIsMicrocycleModalOpen(false);
                         }}
                         className="w-full justify-center text-xs text-muted-foreground hover:text-destructive mt-2"
@@ -226,14 +289,14 @@ const WorkoutPage: React.FC = () => {
                 <Label htmlFor="category-filter-trigger" className="text-xs text-muted-foreground">Filtro de Categorías</Label>
                 <Dialog open={isCategoryModalOpen} onOpenChange={setIsCategoryModalOpen}>
                   <DialogTrigger asChild>
-                    <Button 
+                    <Button
                       id="category-filter-trigger"
-                      variant="outline" 
-                      size="sm" 
+                      variant="outline"
+                      size="sm"
                       className="w-full justify-start text-left font-normal mt-1"
-                      disabled={isLoggingPerformance || isPausingGoal} 
+                      disabled={isLoggingPerformance || isPausingGoal}
                     >
-                      {selectedCategoryFilters.length > 0 
+                      {selectedCategoryFilters.length > 0
                         ? `${selectedCategoryFilters.length} categorí${selectedCategoryFilters.length === 1 ? 'a' : 'as'} seleccionada${selectedCategoryFilters.length === 1 ? '' : 's'}`
                         : 'Todas las categorías'}
                     </Button>
@@ -260,8 +323,8 @@ const WorkoutPage: React.FC = () => {
                               className={`
                                 flex-grow sm:flex-grow-0 px-3 py-1.5 text-xs font-medium rounded-md transition-colors
                                 focus:outline-none focus:ring-2 focus:ring-offset-1
-                                ${isSelected 
-                                  ? 'bg-brand-success text-white hover:bg-brand-success/90 focus:ring-brand-success' 
+                                ${isSelected
+                                  ? 'bg-brand-success text-white hover:bg-brand-success/90 focus:ring-brand-success'
                                   : 'bg-brand-error text-white hover:bg-brand-error/90 focus:ring-brand-error'
                                 }
                               `}
@@ -272,9 +335,9 @@ const WorkoutPage: React.FC = () => {
                         })}
                       </div>
                       {selectedCategoryFilters.length > 0 && (
-                        <Button 
-                          variant="link" 
-                          size="sm" 
+                        <Button
+                          variant="link"
+                          size="sm"
                           className="p-0 h-auto text-xs mt-2 w-full justify-center text-muted-foreground hover:text-destructive"
                           onClick={() => {
                             handleSelectCategoryFilters([]);
@@ -289,11 +352,88 @@ const WorkoutPage: React.FC = () => {
                     </div>
                   </DialogContent>
                 </Dialog>
-              </div> 
+              </div>
             )}
+
+            {selectedWorkoutMicrocycle !== null && !isLoadingGoals && availableEquipment.length > 0 && (
+              <div className="p-1"> {/* Equipment Filter Block Start */}
+                <Label htmlFor="equipment-filter-trigger" className="text-xs text-muted-foreground">Filtro de Equipamiento</Label>
+                <Dialog open={isEquipmentModalOpen} onOpenChange={setIsEquipmentModalOpen}>
+                  <DialogTrigger asChild>
+                    <Button
+                      id="equipment-filter-trigger"
+                      variant="outline"
+                      size="sm"
+                      className="w-full justify-start text-left font-normal mt-1"
+                      disabled={isLoggingPerformance || isPausingGoal}
+                    >
+                      {selectedEquipmentFilters.length > 0
+                        ? `${selectedEquipmentFilters.length} equipamiento${selectedEquipmentFilters.length === 1 ? '' : 's'} seleccionado${selectedEquipmentFilters.length === 1 ? '' : 's'}`
+                        : 'Todo el equipamiento'}
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Filtrar Ejercicios por Equipamiento</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-2 space-y-3">
+                      <p className="text-sm text-muted-foreground">
+                        Selecciona uno o más tipos de equipamiento. Se mostrarán ejercicios que requieran CUALQUIERA del equipamiento elegido.
+                        Si no seleccionas ninguno, se mostrarán todos los ejercicios activos del microciclo.
+                      </p>
+                      <div className="flex flex-wrap gap-2 max-h-[200px] overflow-y-auto p-1 rounded-md border">
+                        {availableEquipment.map((equipment: string) => {
+                          const isSelected = selectedEquipmentFilters.includes(equipment);
+                          return (
+                            <Button
+                              key={equipment}
+                              size="sm"
+                              onClick={() => {
+                                const newFilters = isSelected
+                                  ? selectedEquipmentFilters.filter((eq: string) => eq !== equipment)
+                                  : [...selectedEquipmentFilters, equipment];
+                                handleSelectEquipmentFilters(newFilters);
+                              }}
+                              disabled={isLoggingPerformance || isPausingGoal}
+                              className={`
+                                flex-grow sm:flex-grow-0 px-3 py-1.5 text-xs font-medium rounded-md transition-colors
+                                focus:outline-none focus:ring-2 focus:ring-offset-1
+                                ${isSelected
+                                  ? 'bg-brand-success text-white hover:bg-brand-success/90 focus:ring-brand-success'
+                                  : 'bg-brand-error text-white hover:bg-brand-error/90 focus:ring-brand-error'
+                                }
+                              `}
+                            >
+                              {equipment}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                      {selectedEquipmentFilters.length > 0 && (
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="p-0 h-auto text-xs mt-2 w-full justify-center text-muted-foreground hover:text-destructive"
+                          onClick={() => {
+                            handleSelectEquipmentFilters([]);
+                          }}
+                        >
+                          Limpiar filtros de equipamiento
+                        </Button>
+                      )}
+                    </div>
+                    <div className="flex justify-end pt-2 border-t mt-4">
+                        <Button size="sm" onClick={() => setIsEquipmentModalOpen(false)}>Hecho</Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            )}
+
+
             </div>
         )}
-      </div> 
+      </div>
     </div>
   );
 };

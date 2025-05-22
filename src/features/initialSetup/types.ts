@@ -30,7 +30,8 @@ export interface ChosenExerciseGoalData {
   
   // ¡AHORA SON OBLIGATORIOS! (aunque pueden ser arrays vacíos si el usuario no selecciona)
   categories_general: string[]; 
-  categories_specific: string[]; 
+  categories_specific: string[];
+  equipment_needed?: string[];
 
   notes?: string | null;
   active?: 0 | 1;

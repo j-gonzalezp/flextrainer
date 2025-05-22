@@ -6,12 +6,13 @@ interface ExerciseTimerProps {
   goalId: number; // For logging/debugging
   onTimerPause: (remainingSeconds: number) => void;
   onTimerComplete: () => void;
+  onSoundTrigger: (type: 'complete') => void; // Add new prop
   autoStart: boolean;
-  controlRef?: React.RefObject<{ getTimeLeft: () => number; pause: () => void; start: () => void; reset: (newDuration: number) => void; }>;
+  controlRef?: React.RefObject<TimerRef | null>; // Allow null
 }
 
-const ExerciseTimer = React.forwardRef<{ getTimeLeft: () => number; pause: () => void; start: () => void; reset: (newDuration: number) => void; }, ExerciseTimerProps>(
-  ({ initialDurationSeconds, goalId, onTimerPause, onTimerComplete, autoStart, controlRef }, ref) => {
+const ExerciseTimer = React.forwardRef<TimerRef | null, ExerciseTimerProps>( // Allow null in forwardRef type
+  ({ initialDurationSeconds, goalId, onTimerPause, onTimerComplete, onSoundTrigger, autoStart, controlRef }, ref) => {
     const [timeLeft, setTimeLeft] = useState(initialDurationSeconds);
     const [isRunning, setIsRunning] = useState(autoStart && initialDurationSeconds > 0);
     const [isCompleted, setIsCompleted] = useState(initialDurationSeconds <= 0);
@@ -50,6 +51,7 @@ const ExerciseTimer = React.forwardRef<{ getTimeLeft: () => number; pause: () =>
               setIsRunning(false);
               setIsCompleted(true);
               onTimerComplete(); // Call completion callback
+              onSoundTrigger('complete'); // Trigger sound on complete
               return 0;
             }
             return newTime;
@@ -108,7 +110,7 @@ const ExerciseTimer = React.forwardRef<{ getTimeLeft: () => number; pause: () =>
     };
 
     // Imperative Handle
-    useImperativeHandle(ref, () => ({
+    useImperativeHandle(controlRef, () => ({ // Use controlRef here
       getTimeLeft: () => {
         console.log(`[ExerciseTimer-${goalId}] Imperative getTimeLeft() called, returning: ${timeLeft}`);
         return timeLeft;
