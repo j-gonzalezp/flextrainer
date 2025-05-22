@@ -35,7 +35,7 @@ const CurrentExerciseDisplay: React.FC<CurrentExerciseDisplayProps> = ({
   onExerciseTimerPause, // Destructure new prop
   onExerciseTimerSoundTrigger, // Destructure new prop
 }) => {
-  const prevGoalIdRef = useRef<number | null | undefined>(goal?.id);
+  const prevGoalIdRef = useRef<string | null | undefined>(goal?.id);
   // Remove the local timerRef as we are now using the one from the hook
   // const timerRef = useRef<TimerRef | null>(null);
 
@@ -62,7 +62,7 @@ const CurrentExerciseDisplay: React.FC<CurrentExerciseDisplayProps> = ({
   const effectiveInitialDuration = goal.duration_seconds;
 
   const formatObjective = () => {
-    let objective = `${goal.sets} series x ${goal.reps} reps`;
+    let objective = `1 serie x ${goal.reps || 'N/A'} reps`;
     if (goal.weight && goal.weight > 0) {
       objective += ` @ ${goal.weight}kg`;
     }
@@ -71,6 +71,10 @@ const CurrentExerciseDisplay: React.FC<CurrentExerciseDisplayProps> = ({
     }
     return objective;
   };
+
+  // Asegúrate de que goal no sea null antes de acceder a sus propiedades
+  const completedSets = goal?.performance?.totalSetsCompleted ?? 0;
+  const totalPlannedSets = goal?.performance?.totalPlannedSets ?? goal?.sets ?? 0;
 
   return (
     <Card className="shadow-lg border-accent/30 flex flex-col min-h-[180px]">
@@ -111,7 +115,10 @@ const CurrentExerciseDisplay: React.FC<CurrentExerciseDisplayProps> = ({
                 </div>
               </div>
               <CardDescription className="text-base text-muted-foreground mt-2">
-                <span className="font-medium">Objetivo:</span> {formatObjective()}
+                <span className="font-medium">Objetivo (serie actual):</span> {formatObjective()}
+              </CardDescription>
+              <CardDescription className="text-base text-muted-foreground mt-1">
+                <span className="font-medium">Progreso:</span> {completedSets} / {totalPlannedSets} series completadas
               </CardDescription>
             </div>
           </div>
@@ -139,8 +146,8 @@ const CurrentExerciseDisplay: React.FC<CurrentExerciseDisplayProps> = ({
                     Temporizador:
                   </h4>
                   <ExerciseTimer
-                    key={goal.id}
-                    goalId={goal.id}
+                    key={goal.id.toString()}
+                    goalId={goal.id.toString()}
                     initialDurationSeconds={effectiveInitialDuration}
                     onTimerPause={onExerciseTimerPause} // Pass the prop
                     onTimerComplete={onExerciseTimerComplete} // Pass the prop

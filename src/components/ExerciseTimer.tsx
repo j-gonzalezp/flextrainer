@@ -3,7 +3,7 @@ export type TimerRef = { getTimeLeft: () => number; pause: () => void; start: ()
 
 interface ExerciseTimerProps {
   initialDurationSeconds: number;
-  goalId: number; // For logging/debugging
+  goalId: string; // For logging/debugging
   onTimerPause: (remainingSeconds: number) => void;
   onTimerComplete: () => void;
   onSoundTrigger: (type: 'complete') => void; // Add new prop

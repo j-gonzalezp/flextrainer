@@ -19,6 +19,7 @@ export interface Goal {
   updated_at: string;
   exercise_library_id?: string | null;
   completedSetsCount?: number;
+  performance?: GoalPerformance;
 }
 
 export type GoalInsert = Omit<Goal, 'id' | 'created_at' | 'updated_at' | 'completedSetsCount' | 'performance'>;

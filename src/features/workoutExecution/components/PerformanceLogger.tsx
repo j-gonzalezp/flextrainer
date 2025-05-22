@@ -51,6 +51,41 @@ const PerformanceLogger: React.FC<PerformanceLoggerProps> = ({
   setPerformanceNotes,
   isSubmitting,
 }) => {
+  React.useEffect(() => {
+    if (goal) {
+      // Pre-cargar Reps si el goal tiene reps definidas
+      if (goal.reps !== undefined && goal.reps !== null) {
+        setPerformanceReps(goal.reps.toString());
+      } else {
+        // Opcional: si no hay reps en el goal, puedes limpiar el campo o dejarlo como estaba
+        // setPerformanceReps(''); // Descomenta si quieres limpiar si no hay reps en el goal
+      }
+
+      // Pre-cargar Peso si el goal tiene peso definido
+      if (goal.weight !== undefined && goal.weight !== null) {
+        setPerformanceWeight(goal.weight.toString());
+      } else {
+        // Opcional: si no hay peso en el goal, puedes limpiar el campo o dejarlo como estaba
+        // setPerformanceWeight(''); // Descomenta si quieres limpiar si no hay peso en el goal
+      }
+
+      // Opcional: Pre-cargar Duración si el goal tiene duración definida
+      // if (goal.duration_seconds !== undefined && goal.duration_seconds !== null) {
+      //   setPerformanceDuration(goal.duration_seconds.toString());
+      // } else {
+      //   // setPerformanceDuration('');
+      // }
+
+    } else {
+      // Si no hay goal, limpiar los campos (o manejar como prefieras)
+      setPerformanceReps('');
+      setPerformanceWeight('');
+      // setPerformanceDuration('');
+      // setPerformanceNotes(''); // Considera si también quieres limpiar las notas
+      // setPerformanceFailedSet(false); // Considera si quieres resetear el estado de fallo
+    }
+  }, [goal, setPerformanceReps, setPerformanceWeight]); // Removed setPerformanceDuration as it's commented out in the effect
+
   const handleSubmit = () => {
     if (!goal) {
       toast.error('Error: No hay ejercicio actual para registrar.');
