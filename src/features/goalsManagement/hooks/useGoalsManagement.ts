@@ -45,46 +45,60 @@ export const useGoalsManagement = () => {
   // NUEVO: Calcular rendimiento detallado por meta
   // Modificado: Calcular rendimiento detallado por meta (sin RPE)
   const goalsPerformance = useMemo(() => {
-    console.log('[useGoalsManagement] Calculating detailed goals performance from doneExercises and goals. (No RPE)');
+    console.log('[useGoalsManagement] Calculating detailed goals performance from doneExercises and goals.');
     const performanceMap: { [goalId: string]: GoalPerformance } = {};
 
     goals.forEach(goal => {
       const relevantDoneExercises = doneExercises.filter(de => de.goal_id === goal.id);
-      let totalSets = 0;
+      let totalSetsCompleted = 0;
       let totalRepsSum = 0;
-      let totalWeightSum = 0; // Para calcular volumen total
+      let sumOfWeights = 0; // For average weight per set
+      let totalVolumeLifted = 0; // For total volume
+      let maxWeightAchievedInASet = 0;
+      let maxRepsAchievedInASet = 0;
       let setsMeetingTarget = 0; // Keep this for wasCompleted logic
 
       relevantDoneExercises.forEach(de => {
-        totalSets += 1;
-        totalRepsSum += de.reps || 0;
-        totalWeightSum += (de.weight_lifted || 0) * (de.reps || 0); // Volumen levantado = Peso * Reps
-        if (de.reps && goal.target_reps && de.reps >= goal.target_reps) {
+        totalSetsCompleted += 1;
+        const reps = de.reps || 0;
+        const weight = de.weight_lifted || 0;
+
+        totalRepsSum += reps;
+        sumOfWeights += weight;
+        totalVolumeLifted += weight * reps;
+        maxWeightAchievedInASet = Math.max(maxWeightAchievedInASet, weight);
+        maxRepsAchievedInASet = Math.max(maxRepsAchievedInASet, reps);
+
+        if (reps >= (goal.reps || 0)) {
           setsMeetingTarget++;
         }
       });
 
-      const averageRepsPerSet = totalSets > 0 ? totalRepsSum / totalSets : 0;
-      const averageWeightPerSet = totalSets > 0 ? (totalWeightSum / totalSets) / totalSets : 0; // Promedio de peso POR SET (corregido)
-      // NOTA: averageWeightPerSet es el promedio del peso levantado por set.
+      const averageRepsPerSet = totalSetsCompleted > 0 ? totalRepsSum / totalSetsCompleted : 0;
+      const averageWeightPerSet = totalSetsCompleted > 0 ? sumOfWeights / totalSetsCompleted : 0;
 
       // Lógica de "cumplida":
       // Consideramos cumplida si el número total de sets completados es >= al objetivo
       // Y el promedio de reps por set es >= al objetivo de reps
-      const wasCompleted = (totalSets >= (goal.target_sets || 0)) && (averageRepsPerSet >= (goal.target_reps || 0));
+      const wasCompleted = (totalSetsCompleted >= (goal.sets || 0)) && (averageRepsPerSet >= (goal.reps || 0));
 
       performanceMap[goal.id.toString()] = {
         goalId: goal.id.toString(),
-        totalSetsCompleted: totalSets,
+        totalSetsCompleted: totalSetsCompleted,
         totalRepsCompleted: totalRepsSum,
-        averageRepsPerSet: parseFloat(averageRepsPerSet.toFixed(1)), // Redondea para visualización
-        averageWeightPerSet: parseFloat(averageWeightPerSet.toFixed(1)), // Redondea para visualización
+        averageRepsPerSet: parseFloat(averageRepsPerSet.toFixed(1)),
+        averageWeightPerSet: parseFloat(averageWeightPerSet.toFixed(1)),
         wasCompleted: wasCompleted,
         setsMet: setsMeetingTarget,
         repsMet: averageRepsPerSet, // Repeticiones promedio logradas
-      };
+        totalVolumeLifted: parseFloat(totalVolumeLifted.toFixed(1)),
+        maxWeightAchievedInASet: parseFloat(maxWeightAchievedInASet.toFixed(1)),
+        maxRepsAchievedInASet: maxRepsAchievedInASet, // Reps are integers, no need for toFixed(1)
+        totalPlannedSets: goal.sets || 0,
+        totalPlannedReps: goal.reps || 0,
+      } as GoalPerformance; // Explicitly cast to GoalPerformance
     });
-    console.log('[useGoalsManagement] Goals performance calculated (No RPE):', performanceMap);
+    console.log('[useGoalsManagement] Goals performance calculated:', performanceMap);
     return performanceMap;
   }, [goals, doneExercises]); // Dependencias: `goals` y `doneExercises`
 
@@ -297,71 +311,152 @@ export const useGoalsManagement = () => {
     return microcycles; 
   }, [user?.id, microcycles, selectedMicrocycle]); 
 
-  // Modificado: Lógica de progresión de metas (sin RPE)
-  const suggestProgression = useCallback((goal: Goal, performance: GoalPerformance): ProposedGoal => {
-    const baseGoal: Omit<GoalInsert, 'user_id' | 'microcycle'> = {
+  const suggestProgression = useCallback((goal: Goal, performance?: GoalPerformance): ProposedGoal => {
+    const currentSets = goal.sets || 0;
+    const currentReps = goal.reps || 0;
+
+    let nextTargetSets = currentSets;
+    let nextTargetReps = currentReps;
+    let nextComments = '';
+    let toastMessage = '';
+    let toastDescription = '';
+    let toastType: 'info' | 'warn' = 'info';
+
+    const baseProposedGoal: Omit<ProposedGoal, 'sets' | 'reps' | 'comments'> = {
       exercise_name: goal.exercise_name,
-      target_sets: goal.target_sets,
-      target_reps: goal.target_reps,
-      comments: goal.comments,
       categories: goal.categories,
       active: 1,
+      user_id: user!.id,
+      microcycle: (selectedMicrocycle || 0) + 1,
+      originalGoalId: goal.id,
+      performance: performance,
+      includeInNextMicrocycle: true,
     };
 
-    if (performance.wasCompleted) {
-      // Si la meta se cumplió, sugerir progresión
-      const currentSets = goal.target_sets || 0;
-      const currentReps = goal.target_reps || 0;
+    if (!performance) {
+      // Scenario: No Data (New Goal/Not Performed)
+      nextTargetSets = currentSets;
+      nextTargetReps = currentReps;
+      nextComments = 'Sugerencia: Repetir objetivo original (sin datos de rendimiento)';
+      toastMessage = `${goal.exercise_name}: Repetir objetivo original`;
+      toastDescription = `Meta: ${currentSets}x${currentReps}. Sin datos de rendimiento.`;
+      toastType = 'info';
+      console.log(`[useGoalsManagement] suggestProgression: No performance data for goal ${goal.exercise_name}. Suggesting to repeat original goal.`);
 
-      let newSets = currentSets;
-      let newReps = currentReps;
-      let suggestionText = '';
+    } else if (performance.wasCompleted) {
+      // Scenario: Meta Cumplida (Success)
+      const averageReps = performance.averageRepsPerSet;
+      const totalCompletedSets = performance.totalSetsCompleted;
+      const totalPlannedSets = performance.totalPlannedSets;
+      const totalPlannedReps = performance.totalPlannedReps;
 
-      // Estrategia de progresión simplificada (sin RPE):
-      // Priorizar aumento de reps si reps son bajas a moderadas.
-      // Si reps ya son altas, priorizar aumento de sets.
+      // Check for strong completion (exceeding planned sets/reps significantly - simplified check)
+      // Using a threshold like 1.2x planned sets AND 1.2x planned reps as a proxy for "significantly exceeding"
+      const significantlyExceeded = (totalCompletedSets >= totalPlannedSets * 1.2) && (averageReps >= totalPlannedReps * 1.2);
 
-      if (currentReps < 12) { // Umbral arbitrario para reps (ej. 12 reps)
-        newReps = currentReps + 1;
-        suggestionText = `Sugerencia: ${newSets}x${newReps} (aumentar repeticiones)`;
+      if (significantlyExceeded) {
+         if (averageReps < 12) {
+            // Prioritize increasing reps if below threshold
+            nextTargetReps = currentReps + 2; // Suggest a larger jump for strong completion
+            nextComments = `Progreso Fuerte: +2 repeticiones`;
+            toastMessage = `${goal.exercise_name}: Progreso Fuerte (+2 reps)`;
+            toastDescription = `Meta anterior: ${currentSets}x${currentReps}. Rendimiento: ${totalCompletedSets} sets, ${averageReps.toFixed(1)} reps avg.`;
+         } else if (totalCompletedSets < 5) {
+            // Then prioritize increasing sets if below threshold
+            nextTargetSets = currentSets + 1;
+            nextComments = `Progreso Fuerte: +1 set`;
+            toastMessage = `${goal.exercise_name}: Progreso Fuerte (+1 set)`;
+            toastDescription = `Meta anterior: ${currentSets}x${currentReps}. Rendimiento: ${totalCompletedSets} sets, ${averageReps.toFixed(1)} reps avg.`;
+         } else {
+            // Otherwise, suggest maintaining sets/reps and focus on weight (implicitly)
+            nextTargetSets = currentSets;
+            nextTargetReps = currentReps;
+            nextComments = `Progreso Fuerte: Mantener sets/reps, enfocar en peso`;
+            toastMessage = `${goal.exercise_name}: Progreso Fuerte (Mantener)`;
+            toastDescription = `Meta anterior: ${currentSets}x${currentReps}. Rendimiento: ${totalCompletedSets} sets, ${averageReps.toFixed(1)} reps avg. Sugerencia: Enfocar en aumentar peso.`;
+         }
+         toastType = 'info'; // Strong completion is positive
+
       } else {
-        newSets = currentSets + 1;
-        suggestionText = `Sugerencia: ${newSets}x${newReps} (aumentar sets)`;
+         // Adequate completion (`wasCompleted` is true but not significantly exceeded)
+         if (averageReps < 12) {
+            // Prioritize increasing reps by 1 if below threshold
+            nextTargetReps = currentReps + 1;
+            nextComments = `Progreso: +1 repetición`;
+            toastMessage = `${goal.exercise_name}: Progreso (+1 rep)`;
+            toastDescription = `Meta anterior: ${currentSets}x${currentReps}. Cumplida: Sí. Rendimiento: ${totalCompletedSets} sets, ${averageReps.toFixed(1)} reps avg.`;
+         } else if (totalCompletedSets < 5) {
+            // Then prioritize increasing sets by 1 if below threshold
+            nextTargetSets = currentSets + 1;
+            nextComments = `Progreso: +1 set`;
+            toastMessage = `${goal.exercise_name}: Progreso (+1 set)`;
+            toastDescription = `Meta anterior: ${currentSets}x${currentReps}. Cumplida: Sí. Rendimiento: ${totalCompletedSets} sets, ${averageReps.toFixed(1)} reps avg.`;
+         }
+          else {
+            // Otherwise, suggest maintaining sets/reps and focus on weight (implicitly)
+            nextTargetSets = currentSets;
+            nextTargetReps = currentReps;
+            nextComments = `Progreso: Mantener sets/reps, enfocar en peso`;
+            toastMessage = `${goal.exercise_name}: Progreso (Mantener)`;
+            toastDescription = `Meta anterior: ${currentSets}x${currentReps}. Cumplida: Sí. Rendimiento: ${totalCompletedSets} sets, ${averageReps.toFixed(1)} reps avg. Sugerencia: Enfocar en aumentar peso.`;
+         }
+         toastType = 'info'; // Adequate completion is also positive
       }
 
-      toast.info(`${goal.exercise_name}: ${suggestionText}`, {
-        description: `Meta anterior: ${currentSets}x${currentReps}. Cumplida: Sí.`,
-        duration: 3000
-      });
+      console.log(`[useGoalsManagement] suggestProgression: Goal ${goal.exercise_name} was completed. Suggesting progression to ${nextTargetSets} sets, ${nextTargetReps} reps.`);
 
-      console.log(`[useGoalsManagement] suggestProgression: Goal ${goal.exercise_name} was completed. Suggesting progression to ${newSets} sets, ${newReps} reps.`);
-      return {
-        ...baseGoal,
-        target_sets: newSets,
-        target_reps: newReps,
-        originalGoalId: goal.id,
-        performance: performance,
-        includeInNextMicrocycle: true,
-        user_id: user!.id, // Added missing user_id
-        microcycle: (selectedMicrocycle || 0) + 1, // Added missing microcycle
-      };
     } else {
-      // Si la meta NO se cumplió, sugerir repetirla tal cual
-      toast.info(`${goal.exercise_name}: Repetir objetivo original`, {
-        description: `Meta anterior: ${goal.target_sets}x${goal.target_reps}. Cumplida: No.`,
-        duration: 3000
-      });
-      console.log(`[useGoalsManagement] suggestProgression: Goal ${goal.exercise_name} was NOT completed. Suggesting to repeat original goal.`);
-      return {
-        ...baseGoal,
-        originalGoalId: goal.id,
-        performance: performance,
-        includeInNextMicrocycle: true,
-        user_id: user!.id, // Added missing user_id
-        microcycle: (selectedMicrocycle || 0) + 1, // Added missing microcycle
-      };
+      // Scenario: Meta NO Cumplida (Failure)
+      const totalCompletedSets = performance.totalSetsCompleted;
+      const averageReps = performance.averageRepsPerSet;
+      const totalPlannedSets = performance.totalPlannedSets;
+      const totalPlannedReps = performance.totalPlannedReps;
+
+      const setsCompliance = totalPlannedSets > 0 ? totalCompletedSets / totalPlannedSets : 0;
+      const repsCompliance = totalPlannedReps > 0 ? averageReps / totalPlannedReps : 0;
+
+      if (setsCompliance < 0.7 || repsCompliance < 0.7) {
+        // Low compliance (less than 70% of planned sets or average reps)
+        nextTargetSets = currentSets;
+        nextTargetReps = currentReps;
+        nextComments = `Repetir: Rendimiento bajo`;
+        toastMessage = `${goal.exercise_name}: Repetir objetivo original`;
+        toastDescription = `Meta anterior: ${currentSets}x${currentReps}. Cumplida: No. Rendimiento: ${totalCompletedSets} sets, ${averageReps.toFixed(1)} reps avg. Sugerencia: Repetir debido a bajo rendimiento.`;
+        toastType = 'warn';
+        console.log(`[useGoalsManagement] suggestProgression: Goal ${goal.exercise_name} was NOT completed (low compliance). Suggesting to repeat original goal.`);
+      } else {
+        // Near completion (not completed, but compliance >= 70%)
+        nextTargetSets = currentSets;
+        nextTargetReps = currentReps;
+        nextComments = `Repetir: Cerca de cumplir objetivo`;
+        toastMessage = `${goal.exercise_name}: Repetir objetivo original`;
+        toastDescription = `Meta anterior: ${currentSets}x${currentReps}. Cumplida: No. Rendimiento: ${totalCompletedSets} sets, ${averageReps.toFixed(1)} reps avg. Sugerencia: Repetir para consolidar.`;
+        toastType = 'info'; // Can be info as it's near completion
+        console.log(`[useGoalsManagement] suggestProgression: Goal ${goal.exercise_name} was NOT completed (near completion). Suggesting to repeat original goal.`);
+      }
     }
-  }, []); // Dependencias: Ninguna función externa mutable.
+
+    // Ensure sets and reps are always at least 1
+    nextTargetSets = Math.max(1, nextTargetSets);
+    nextTargetReps = Math.max(1, nextTargetReps);
+
+    // Show toast notification
+    if (toastMessage) {
+      if (toastType === 'info') {
+        toast.info(toastMessage, { description: toastDescription, duration: 3000 });
+      } else {
+        toast.warning(toastMessage, { description: toastDescription, duration: 3000 });
+      }
+    }
+
+
+    return {
+      ...baseProposedGoal,
+      sets: nextTargetSets,
+      reps: nextTargetReps,
+      comments: nextComments,
+    };
+  }, [user, selectedMicrocycle]); // Dependencias: user y selectedMicrocycle para baseProposedGoal
   
   // Función para preparar las metas para el wizard del siguiente microciclo
   const prepareGoalsForNextMicrocycleWizard = useCallback(() => {
@@ -437,8 +532,8 @@ export const useGoalsManagement = () => {
         .filter(g => g.includeInNextMicrocycle)
         .map(g => ({
           exercise_name: g.exercise_name,
-          target_sets: g.target_sets, // Use target_sets
-          target_reps: g.target_reps, // Use target_reps
+          sets: g.sets, // Use sets
+          reps: g.reps, // Use reps
           comments: g.comments,
           categories: g.categories,
           active: g.active,

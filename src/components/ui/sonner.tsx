@@ -4,11 +4,12 @@ import { Toaster as Sonner, type ToasterProps } from "sonner"
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme()
 
+  console.log('[Sonner Toaster] Rendering with position:', props.position);
   return (
     <Sonner
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
-      position="bottom-right"
+      position="bottom-center"
       style={{
           "--normal-bg": "var(--popover)",
           "--normal-text": "var(--popover-foreground)",

@@ -4,8 +4,8 @@ export interface Goal {
   id: string;
   user_id: string;
   exercise_name: string;
-  target_sets: number; // Changed from sets
-  target_reps: number; // Changed from reps
+  sets: number | null;
+  reps: number | null;
   microcycle: number;
   active: 0 | 1;
   categories?: string[];
@@ -35,7 +35,7 @@ export interface DisplayableDoneExercise extends DoneExerciseLog {
 
 
 // Defines the keys of the Goal object that are eligible for sorting
-export type SortableGoalKeys = keyof Pick<Goal, 'exercise_name' | 'target_sets' | 'target_reps' | 'created_at' | 'weight' | 'duration_seconds' | 'active'> | 'completedSetsCount';
+export type SortableGoalKeys = keyof Pick<Goal, 'exercise_name' | 'sets' | 'reps' | 'created_at' | 'weight' | 'duration_seconds' | 'active'> | 'completedSetsCount';
 
 export type GoalPerformance = {
   goalId: string;
@@ -46,6 +46,11 @@ export type GoalPerformance = {
   wasCompleted: boolean;
   setsMet: number;
   repsMet: number;
+  totalVolumeLifted: number; // Added
+  maxWeightAchievedInASet: number; // Added
+  maxRepsAchievedInASet: number; // Added
+  totalPlannedSets: number; // Added
+  totalPlannedReps: number; // Added
   // lastRPE?: number; // Removed RPE
 };
 

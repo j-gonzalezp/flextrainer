@@ -1,5 +1,4 @@
 import NextMicrocycleWizard from './NextMicrocycleWizard';
-import type { ProposedGoal } from '../types'; // Ensure ProposedGoal is imported
 import React from 'react';
 import { useGoalsManagement } from '../hooks/useGoalsManagement';
 import MicrocycleSelector from './MicrocycleSelector';
@@ -48,9 +47,8 @@ const GoalsManagementPage: React.FC = () => {
     setProposedNextGoals,
     handleEnableNextMicrocycle, // The new button handler
     createNextMicrocycleWithProposedGoals, // The function to confirm the wizard
-    goalsPerformance // Goal performance data (passed to the wizard)
   } = useGoalsManagement();
-// Detectar ausencia de microciclos y abrir modal automáticamente
+
   React.useEffect(() => {
     // console.log('[GoalsManagementPage] Checking for microcycles:', microcycles.length, 'Loading:', isLoadingMicrocycles);
     if (!isLoadingMicrocycles && microcycles.length === 0) {
@@ -198,7 +196,7 @@ const GoalsManagementPage: React.FC = () => {
   {isLoadingNextMicrocycle && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
   Habilitar Microciclo {selectedMicrocycle !== null ? selectedMicrocycle + 1 : 'Siguiente'}
 </Button>
-        </CardFooter>
+         </CardFooter>
       </Card>
 
       {selectedMicrocycle !== null && (
@@ -260,11 +258,11 @@ const GoalsManagementPage: React.FC = () => {
               </div>
             ) : (
               <GoalList
-                displayedGoals={displayedGoals} // Changed from goals to displayedGoals
+                displayedGoals={displayedGoals}
                 onEditGoal={openGoalFormForEdit}
                 onDeleteGoal={handleDeleteGoal}
                 onToggleActive={handleToggleGoalActive}
-                isLoading={isSubmittingGoal || isLoadingGoals} // isLoadingGoals might also affect interaction
+                isLoading={isSubmittingGoal || isLoadingGoals}
                 availableCategories={availableCategories}
                 selectedCategoryFilters={selectedCategoryFilters}
                 sortConfig={sortConfig}
@@ -335,8 +333,8 @@ const GoalsManagementPage: React.FC = () => {
           }}
           proposedGoals={proposedNextGoals}
           setProposedGoals={setProposedNextGoals} // Pass the set function so the wizard can modify the list
-          currentMicrocycleNumber={selectedMicrocycle}
-          nextMicrocycleNumber={selectedMicrocycle + 1} // Calculate the next microcycle number
+          currentMicrocycleNumber={selectedMicrocycle!}
+          nextMicrocycleNumber={selectedMicrocycle! + 1}
           onConfirm={createNextMicrocycleWithProposedGoals} // Pass the function for final confirmation
           isLoading={isLoadingNextMicrocycle}
         />
@@ -344,4 +342,5 @@ const GoalsManagementPage: React.FC = () => {
     </div>
   );
 }
+
 export default GoalsManagementPage;

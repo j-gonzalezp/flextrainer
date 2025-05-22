@@ -50,14 +50,14 @@ const NextMicrocycleWizard: React.FC<NextMicrocycleWizardProps> = ({
 
   const handleGoalChange = useCallback((
     index: number,
-    field: keyof Omit<GoalInsert, 'user_id' | 'microcycle' | 'target_rpe'>, // Exclude target_rpe here
+    field: keyof Omit<GoalInsert, 'user_id' | 'microcycle'>,
     value: any
   ) => {
     console.log('handleGoalChange called', { index, field, value });
     setEditableGoals(prevGoals => {
       const newGoals = [...prevGoals];
       // Ensure numeric fields are parsed correctly
-      if (field === 'target_sets' || field === 'target_reps') { // Removed target_rpe from numeric check
+      if (field === 'sets' || field === 'reps' || field === 'weight' || field === 'duration_seconds') {
          newGoals[index] = { ...newGoals[index], [field]: value === '' ? null : Number(value) };
       } else {
          newGoals[index] = { ...newGoals[index], [field]: value };
@@ -135,11 +135,14 @@ const NextMicrocycleWizard: React.FC<NextMicrocycleWizardProps> = ({
                     {goal.performance ? (
                       <div className="text-sm text-muted-foreground space-y-2">
                         <p className="font-medium">Rendimiento anterior (Microciclo {currentMicrocycleNumber}):</p>
-                        <div className="grid grid-cols-2 gap-4">
-                          <p>Sets Completados: {goal.performance.totalSetsCompleted}</p>
-                          <p>Reps Promedio: {goal.performance.averageRepsPerSet ? goal.performance.averageRepsPerSet.toFixed(1) : 'N/A'}</p>
+                        <div className="grid grid-cols-2 gap-4 text-xs">
+                          <p>Planificado: {goal.performance.totalPlannedSets} sets, {goal.performance.totalPlannedReps} reps</p>
+                          <p>Completado: {goal.performance.totalSetsCompleted} sets, {goal.performance.averageRepsPerSet ? goal.performance.averageRepsPerSet.toFixed(1) : 'N/A'} reps (promedio)</p>
+                          <p>Volumen Total: {goal.performance.totalVolumeLifted ? goal.performance.totalVolumeLifted.toFixed(1) : 'N/A'} kg</p>
+                          <p>Peso Máx/Set: {goal.performance.maxWeightAchievedInASet ? goal.performance.maxWeightAchievedInASet.toFixed(1) : 'N/A'} kg</p>
+                          <p>Reps Máx/Set: {goal.performance.maxRepsAchievedInASet ?? 'N/A'}</p>
                           <p>Peso Promedio/Set: {goal.performance.averageWeightPerSet ? goal.performance.averageWeightPerSet.toFixed(1) : 'N/A'} kg</p>
-                          <div className="flex items-center">
+                          <div className="flex items-center col-span-2">
                             Meta Anterior:
                             {goal.performance.wasCompleted ? (
                               <Badge variant="secondary" className="ml-2 bg-green-500 text-white">
@@ -162,23 +165,37 @@ const NextMicrocycleWizard: React.FC<NextMicrocycleWizardProps> = ({
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor={`sets-${index}`}>Sets Objetivo</Label>
-                        <Input
-                          id={`sets-${index}`}
-                          type="number"
-                          value={goal.target_sets ?? ''}
-                          onChange={(e) => handleGoalChange(index, 'target_sets', e.target.value)}
-                          className="mt-1"
-                        />
+                        <div className="flex items-center mt-1">
+                          <Input
+                            id={`sets-${index}`}
+                            type="number"
+                            value={goal.sets ?? ''}
+                            onChange={(e) => handleGoalChange(index, 'sets', e.target.value)}
+                            className="flex-grow mr-2"
+                          />
+                          {goal.performance?.totalPlannedSets !== undefined && goal.sets !== null && (
+                            <span className="text-xs text-muted-foreground">
+                              ({goal.sets > goal.performance.totalPlannedSets ? '+' : goal.sets < goal.performance.totalPlannedSets ? '-' : '='}{goal.performance.totalPlannedSets})
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <div>
                         <Label htmlFor={`reps-${index}`}>Reps Objetivo</Label>
-                        <Input
-                          id={`reps-${index}`}
-                          type="number"
-                          value={goal.target_reps ?? ''}
-                          onChange={(e) => handleGoalChange(index, 'target_reps', e.target.value)}
-                          className="mt-1"
-                        />
+                        <div className="flex items-center mt-1">
+                          <Input
+                            id={`reps-${index}`}
+                            type="number"
+                            value={goal.reps ?? ''}
+                            onChange={(e) => handleGoalChange(index, 'reps', e.target.value)}
+                            className="flex-grow mr-2"
+                          />
+                           {goal.performance?.totalPlannedReps !== undefined && goal.reps !== null && (
+                            <span className="text-xs text-muted-foreground">
+                              ({goal.reps > goal.performance.totalPlannedReps ? '+' : goal.reps < goal.performance.totalPlannedReps ? '-' : '='}{goal.performance.totalPlannedReps})
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                     
