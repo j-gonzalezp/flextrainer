@@ -11,8 +11,8 @@ import type { SortableGoalKeys } from '../types';
 interface GoalListProps {
   displayedGoals: Goal[];
   onEditGoal: (goal: Goal) => void;
-  onDeleteGoal: (goalId: number) => void;
-  onToggleActive: (goalId: number, currentState: Goal['active']) => void;
+  onDeleteGoal: (goalId: string) => void;
+  onToggleActive: (goalId: string, currentState: Goal['active']) => void;
   isLoading?: boolean;
   availableCategories: string[];
   selectedCategoryFilters: string[];
@@ -35,7 +35,7 @@ const GoalList: React.FC<GoalListProps> = ({
   onClearCategoryFilters,
   onRequestSort
 }) => {
-  const handleToggleActive = (goalId: number, currentState: Goal['active']) => {
+  const handleToggleActive = (goalId: string, currentState: Goal['active']) => {
     onToggleActive(goalId, currentState);
     console.log(`Toggling goal ${goalId} from ${currentState} to ${currentState === 1 ? 0 : 1}`);
   };
@@ -60,9 +60,9 @@ const GoalList: React.FC<GoalListProps> = ({
       <TableHeader>
         <TableRow>
           <TableHead onClick={() => onRequestSort('exercise_name')} className="cursor-pointer hover:bg-muted/50 group"><span className='sr-only'>Ordenar por </span>Ejercicio{renderSortIcon('exercise_name')}</TableHead>
-          <TableHead onClick={() => onRequestSort('sets')} className="text-center cursor-pointer hover:bg-muted/50 group"><span className='sr-only'>Ordenar por </span>Sets Totales{renderSortIcon('sets')}</TableHead>
+          <TableHead onClick={() => onRequestSort('target_sets')} className="text-center cursor-pointer hover:bg-muted/50 group"><span className='sr-only'>Ordenar por </span>Sets Objetivo{renderSortIcon('target_sets')}</TableHead>
           <TableHead onClick={() => onRequestSort('completedSetsCount')} className="text-center cursor-pointer hover:bg-muted/50 group"><span className='sr-only'>Ordenar por </span>Sets Realizados{renderSortIcon('completedSetsCount')}</TableHead>
-          <TableHead onClick={() => onRequestSort('reps')} className="text-center cursor-pointer hover:bg-muted/50 group"><span className='sr-only'>Ordenar por </span>Reps{renderSortIcon('reps')}</TableHead>
+          <TableHead onClick={() => onRequestSort('target_reps')} className="text-center cursor-pointer hover:bg-muted/50 group"><span className='sr-only'>Ordenar por </span>Reps Objetivo{renderSortIcon('target_reps')}</TableHead>
           <TableHead onClick={() => onRequestSort('weight')} className="text-center cursor-pointer hover:bg-muted/50 group"><span className='sr-only'>Ordenar por </span>Peso{renderSortIcon('weight')}</TableHead>
           <TableHead onClick={() => onRequestSort('duration_seconds')} className="text-center cursor-pointer hover:bg-muted/50 group"><span className='sr-only'>Ordenar por </span>Duración{renderSortIcon('duration_seconds')}</TableHead>
           <TableHead className="text-left">
@@ -116,9 +116,9 @@ const GoalList: React.FC<GoalListProps> = ({
         {displayedGoals.map((goal) => (
           <TableRow key={goal.id} className="hover:bg-muted/50">
             <TableCell className="font-medium">{goal.exercise_name}</TableCell>
-            <TableCell className="text-center">{goal.sets}</TableCell>
+            <TableCell className="text-center">{goal.target_sets}</TableCell>
             <TableCell className="text-center">{goal.completedSetsCount}</TableCell>
-            <TableCell className="text-center">{goal.reps}</TableCell>
+            <TableCell className="text-center">{goal.target_reps}</TableCell>
             <TableCell className="text-center">{goal.weight !== null && goal.weight !== undefined ? `${goal.weight} kg` : '-'}</TableCell>
             <TableCell className="text-center">{goal.duration_seconds !== null && goal.duration_seconds !== undefined ? `${goal.duration_seconds}s` : '-'}</TableCell>
             <TableCell>

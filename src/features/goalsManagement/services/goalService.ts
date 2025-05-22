@@ -114,7 +114,7 @@ export const createGoal = async (goalData: GoalInsert, userId: string): Promise<
   return null;
 };
 
-export const updateGoal = async (goalId: number, goalData: GoalUpdate): Promise<Goal | null> => {
+export const updateGoal = async (goalId: string, goalData: GoalUpdate): Promise<Goal | null> => {
   console.log('[goalService] updateGoal: Calling Supabase with goalId:', goalId, 'goalData:', goalData);
 
   const { data, error } = await supabase
@@ -135,7 +135,7 @@ export const updateGoal = async (goalId: number, goalData: GoalUpdate): Promise<
   return null;
 };
 
-export const deleteGoal = async (goalId: number): Promise<boolean> => {
+export const deleteGoal = async (goalId: string): Promise<boolean> => {
   console.log('[goalService] deleteGoal: Calling Supabase with goalId:', goalId);
   const { error } = await supabase
     .from('goals')
@@ -149,7 +149,7 @@ export const deleteGoal = async (goalId: number): Promise<boolean> => {
   return !error;
 };
 
-export const toggleGoalActiveState = async (goalId: number, newActiveState: 0 | 1): Promise<Goal | null> => {
+export const toggleGoalActiveState = async (goalId: string, newActiveState: 0 | 1): Promise<Goal | null> => {
   console.log('[goalService] toggleGoalActiveState: Calling Supabase with goalId:', goalId, 'setting active to:', newActiveState);
   const { data, error } = await supabase
     .from('goals')
@@ -169,70 +169,6 @@ export const toggleGoalActiveState = async (goalId: number, newActiveState: 0 | 
   return null;
 };
 
-export const createNextMicrocycle = async (userId: string, currentMaxMicrocycle: number): Promise<Goal[]> => {
-  console.log('[goalService] createNextMicrocycle: Initiating for userId:', userId, 'from currentMaxMicrocycle:', currentMaxMicrocycle);
-
-  const { data: activeGoals, error: fetchError } = await supabase
-    .from('goals')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('microcycle', currentMaxMicrocycle)
-    .eq('active', 1);
-  console.log('[goalService] createNextMicrocycle: Fetch active goals for duplication - Supabase call with userId:', userId, 'currentMaxMicrocycle:', currentMaxMicrocycle);
-
-  console.log('[goalService] createNextMicrocycle: Fetch active goals response - Data:', activeGoals, 'Error:', fetchError);
-  if (fetchError) {
-    console.error('Error fetching active goals for duplication:', fetchError.message);
-    throw fetchError;
-  }
-
-  if (!activeGoals || activeGoals.length === 0) {
-    console.log('[goalService] createNextMicrocycle: No active goals found to duplicate. Creating minimal goal for new microcycle.');
-    const newMicrocycleNumber = currentMaxMicrocycle + 1;
-    const minimalGoalToInsert = {
-      user_id: userId,
-      microcycle: newMicrocycleNumber,
-      exercise_name: `Microciclo ${newMicrocycleNumber} - Placeholder`,
-      active: 1,
-    };
-
-    const { data: minimalGoal, error: minimalInsertError } = await supabase
-      .from('goals')
-      .insert(minimalGoalToInsert)
-      .select()
-      .single();
-
-    if (minimalInsertError) {
-      console.error('Error inserting minimal goal for new microcycle:', minimalInsertError.message);
-      throw minimalInsertError;
-    }
-    return minimalGoal ? [{ ...minimalGoal, active: minimalGoal.active ? 1 : 0 } as Goal] : [];
-  }
-
-  const newMicrocycleNumber = currentMaxMicrocycle + 1;
-  const goalsToInsert: GoalInsert[] = activeGoals.map(goal => {
-    const { id, created_at, updated_at, user_id: uid, microcycle, ...rest } = goal;
-    return {
-      ...rest,
-      microcycle: newMicrocycleNumber,
-      active: 1,
-    };
-  });
-
-  console.log('[goalService] createNextMicrocycle: Inserting new goals - goalsToInsert:', goalsToInsert);
-  const { data: newGoals, error: insertError } = await supabase
-    .from('goals')
-    .insert(goalsToInsert)
-    .select();
-  console.log('[goalService] createNextMicrocycle: Insert new goals response - Data:', newGoals, 'Error:', insertError);
-
-  if (insertError) {
-    console.error('Error inserting new goals for next microcycle:', insertError.message);
-    throw insertError;
-  }
-
-  return (newGoals || []).map(g => ({...g, active: g.active ? 1 : 0} as Goal));
-};
 
 export const fetchDoneExercisesForMicrocycle = async (userId: string, microcycleNumber: number): Promise<DisplayableDoneExercise[]> => {
   console.log(`[goalService] fetchDoneExercisesForMicrocycle: Calling Supabase for userId: ${userId}, microcycle: ${microcycleNumber}`);
@@ -281,4 +217,23 @@ export const fetchUserMaxMicrocycle = async (userId: string): Promise<number | n
     throw error;
   }
   return data ? data.microcycle : null;
+};
+
+// NUEVA FUNCIÓN: Para insertar múltiples metas a la vez
+export const bulkCreateGoals = async (goals: GoalInsert[]): Promise<Goal[]> => {
+  if (goals.length === 0) {
+    console.log('[goalService] bulkCreateGoals: No goals to insert.');
+    return [];
+  }
+  console.log(`[goalService] Attempting to insert ${goals.length} goals.`);
+  const { data, error } = await supabase
+    .from('goals') // Nombre de tu tabla de metas
+    .insert(goals)
+    .select('*'); // Selecciona todas las columnas de las metas insertadas
+
+  if (error) {
+    console.error('Error al insertar metas en lote:', error);
+    throw new Error(`Error al insertar metas: ${error.message}`);
+  }
+  return data as Goal[];
 };

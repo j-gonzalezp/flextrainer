@@ -1,3 +1,5 @@
+import NextMicrocycleWizard from './NextMicrocycleWizard';
+import type { ProposedGoal } from '../types'; // Ensure ProposedGoal is imported
 import React from 'react';
 import { useGoalsManagement } from '../hooks/useGoalsManagement';
 import MicrocycleSelector from './MicrocycleSelector';
@@ -39,7 +41,14 @@ const GoalsManagementPage: React.FC = () => {
     handleClearCategoryFilters,
     handleRequestSort,
     doneExercises,
-    isLoadingDoneExercises
+    isLoadingDoneExercises,
+    isNextMicrocycleWizardOpen,
+    setIsNextMicrocycleWizardOpen,
+    proposedNextGoals,
+    setProposedNextGoals,
+    handleEnableNextMicrocycle, // The new button handler
+    createNextMicrocycleWithProposedGoals, // The function to confirm the wizard
+    goalsPerformance // Goal performance data (passed to the wizard)
   } = useGoalsManagement();
 // Detectar ausencia de microciclos y abrir modal automáticamente
   React.useEffect(() => {
@@ -169,20 +178,26 @@ const GoalsManagementPage: React.FC = () => {
             </Button>
 
           {/* Button for creating subsequent microcycles */}
-            <Button
-              onClick={() => {
-                if (microcycles.length > 0) {
-                  const nextMicrocycle = Math.max(...microcycles) + 1;
-                  handleSelectMicrocycle(nextMicrocycle);
-                }
-              }}
-              disabled={isLoadingNextMicrocycle || isSubmittingGoal || isLoadingMicrocycles || microcycles.length === 0}
-              className="w-full sm:w-auto bg-secondary hover:bg-secondary/90 text-secondary-foreground transition-colors"
-              size="sm"
-            >
-              {isLoadingNextMicrocycle && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Crear Siguiente Microciclo
-            </Button>
+{/* NUEVO BOTÓN: Habilitar Siguiente Microciclo */}
+<Button
+  onClick={() => {
+    console.log('[GoalsManagementPage] "Habilitar Siguiente Microciclo" button clicked.');
+    handleEnableNextMicrocycle(); // Calls the new hook function
+  }}
+  disabled={
+    isLoadingNextMicrocycle ||
+    isSubmittingGoal ||
+    isLoadingMicrocycles ||
+    microcycles.length === 0 ||
+    selectedMicrocycle === null ||
+    (selectedMicrocycle !== null && displayedGoals.length === 0) // Deshabilita si el microciclo seleccionado no tiene metas
+  }
+  className="flex-shrink-0 bg-secondary hover:bg-secondary/90 text-secondary-foreground transition-colors"
+  size="sm"
+>
+  {isLoadingNextMicrocycle && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+  Habilitar Microciclo {selectedMicrocycle !== null ? selectedMicrocycle + 1 : 'Siguiente'}
+</Button>
         </CardFooter>
       </Card>
 
@@ -307,6 +322,23 @@ const GoalsManagementPage: React.FC = () => {
           }}
           hookHandleAddGoal={handleAddGoal} // Pasa la función del hook para añadir metas
           targetMicrocycleNumber={1} // Siempre será 1 para este flujo
+        />
+      )}
+      {/* NUEVO WIZARD PARA HABILITAR EL SIGUIENTE MICROCICLO */}
+      {isNextMicrocycleWizardOpen && selectedMicrocycle !== null && ( // Only render if open and a microcycle is selected
+        <NextMicrocycleWizard
+          isOpen={isNextMicrocycleWizardOpen}
+          onClose={() => {
+            console.log('[GoalsManagementPage] Closing NextMicrocycleWizard.');
+            setIsNextMicrocycleWizardOpen(false);
+            setProposedNextGoals([]); // Clear proposed goals when closing the wizard
+          }}
+          proposedGoals={proposedNextGoals}
+          setProposedGoals={setProposedNextGoals} // Pass the set function so the wizard can modify the list
+          currentMicrocycleNumber={selectedMicrocycle}
+          nextMicrocycleNumber={selectedMicrocycle + 1} // Calculate the next microcycle number
+          onConfirm={createNextMicrocycleWithProposedGoals} // Pass the function for final confirmation
+          isLoading={isLoadingNextMicrocycle}
         />
       )}
     </div>

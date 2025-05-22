@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import * as goalService from '../services/goalService';
-import type { Goal, GoalInsert, GoalUpdate, DisplayableDoneExercise, SortableGoalKeys } from '../types';
+import type { Goal, GoalInsert, GoalUpdate, DisplayableDoneExercise, SortableGoalKeys, ProposedGoal, GoalPerformance } from '../types';
 import { toast } from 'sonner';
 
 export const useGoalsManagement = () => {
@@ -24,6 +24,8 @@ export const useGoalsManagement = () => {
   const [isSubmittingGoal, setIsSubmittingGoal] = useState(false);
   const [isLoadingNextMicrocycle, setIsLoadingNextMicrocycle] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isNextMicrocycleWizardOpen, setIsNextMicrocycleWizardOpen] = useState(false);
+  const [proposedNextGoals, setProposedNextGoals] = useState<ProposedGoal[]>([]);
 
   // Memoized Derived State
   const completedSetsPerGoal = useMemo(() => {
@@ -39,6 +41,52 @@ export const useGoalsManagement = () => {
     console.log('[useGoalsManagement] Completed sets per goal calculated:', counts);
     return counts;
   }, [doneExercises]);
+  
+  // NUEVO: Calcular rendimiento detallado por meta
+  // Modificado: Calcular rendimiento detallado por meta (sin RPE)
+  const goalsPerformance = useMemo(() => {
+    console.log('[useGoalsManagement] Calculating detailed goals performance from doneExercises and goals. (No RPE)');
+    const performanceMap: { [goalId: string]: GoalPerformance } = {};
+
+    goals.forEach(goal => {
+      const relevantDoneExercises = doneExercises.filter(de => de.goal_id === goal.id);
+      let totalSets = 0;
+      let totalRepsSum = 0;
+      let totalWeightSum = 0; // Para calcular volumen total
+      let setsMeetingTarget = 0; // Keep this for wasCompleted logic
+
+      relevantDoneExercises.forEach(de => {
+        totalSets += 1;
+        totalRepsSum += de.reps || 0;
+        totalWeightSum += (de.weight_lifted || 0) * (de.reps || 0); // Volumen levantado = Peso * Reps
+        if (de.reps && goal.target_reps && de.reps >= goal.target_reps) {
+          setsMeetingTarget++;
+        }
+      });
+
+      const averageRepsPerSet = totalSets > 0 ? totalRepsSum / totalSets : 0;
+      const averageWeightPerSet = totalSets > 0 ? (totalWeightSum / totalSets) / totalSets : 0; // Promedio de peso POR SET (corregido)
+      // NOTA: averageWeightPerSet es el promedio del peso levantado por set.
+
+      // Lógica de "cumplida":
+      // Consideramos cumplida si el número total de sets completados es >= al objetivo
+      // Y el promedio de reps por set es >= al objetivo de reps
+      const wasCompleted = (totalSets >= (goal.target_sets || 0)) && (averageRepsPerSet >= (goal.target_reps || 0));
+
+      performanceMap[goal.id.toString()] = {
+        goalId: goal.id.toString(),
+        totalSetsCompleted: totalSets,
+        totalRepsCompleted: totalRepsSum,
+        averageRepsPerSet: parseFloat(averageRepsPerSet.toFixed(1)), // Redondea para visualización
+        averageWeightPerSet: parseFloat(averageWeightPerSet.toFixed(1)), // Redondea para visualización
+        wasCompleted: wasCompleted,
+        setsMet: setsMeetingTarget,
+        repsMet: averageRepsPerSet, // Repeticiones promedio logradas
+      };
+    });
+    console.log('[useGoalsManagement] Goals performance calculated (No RPE):', performanceMap);
+    return performanceMap;
+  }, [goals, doneExercises]); // Dependencias: `goals` y `doneExercises`
 
   const availableCategories = useMemo(() => {
     console.log('[useGoalsManagement] Recalculating available categories from goals:', goals);
@@ -56,7 +104,8 @@ export const useGoalsManagement = () => {
     // Map goals to include completedSetsCount
     let processedGoals = goals.map(goal => ({
       ...goal,
-      completedSetsCount: completedSetsPerGoal[goal.id.toString()] || 0
+      completedSetsCount: completedSetsPerGoal[goal.id.toString()] || 0,
+      performance: goalsPerformance[goal.id.toString()] // <-- Añadir esta línea
     }));
     console.log('[useGoalsManagement] Goals after mapping completedSetsCount. Raw goal count:', goals.length, 'Count after mapping completed sets:', processedGoals.length);
 
@@ -91,7 +140,7 @@ export const useGoalsManagement = () => {
       console.log('[useGoalsManagement] Goals after sorting:', processedGoals.length);
     }
     return processedGoals;
-  }, [goals, selectedCategoryFilters, sortConfig, completedSetsPerGoal]);
+  }, [goals, selectedCategoryFilters, sortConfig, completedSetsPerGoal, goalsPerformance]); // <-- Añadir goalsPerformance a las dependencias
 
   // Callback Handlers
   const handleToggleCategoryFilter = useCallback((category: string) => {
@@ -248,58 +297,197 @@ export const useGoalsManagement = () => {
     return microcycles; 
   }, [user?.id, microcycles, selectedMicrocycle]); 
 
-  const handleCreateNextMicrocycle = async () => {
-    if (!user?.id) {
-      console.error('[useGoalsManagement] handleCreateNextMicrocycle: User ID no disponible.');
-      toast.error('Error al crear microciclo: Usuario no identificado.');
+  // Modificado: Lógica de progresión de metas (sin RPE)
+  const suggestProgression = useCallback((goal: Goal, performance: GoalPerformance): ProposedGoal => {
+    const baseGoal: Omit<GoalInsert, 'user_id' | 'microcycle'> = {
+      exercise_name: goal.exercise_name,
+      target_sets: goal.target_sets,
+      target_reps: goal.target_reps,
+      comments: goal.comments,
+      categories: goal.categories,
+      active: 1,
+    };
+
+    if (performance.wasCompleted) {
+      // Si la meta se cumplió, sugerir progresión
+      const currentSets = goal.target_sets || 0;
+      const currentReps = goal.target_reps || 0;
+
+      let newSets = currentSets;
+      let newReps = currentReps;
+      let suggestionText = '';
+
+      // Estrategia de progresión simplificada (sin RPE):
+      // Priorizar aumento de reps si reps son bajas a moderadas.
+      // Si reps ya son altas, priorizar aumento de sets.
+
+      if (currentReps < 12) { // Umbral arbitrario para reps (ej. 12 reps)
+        newReps = currentReps + 1;
+        suggestionText = `Sugerencia: ${newSets}x${newReps} (aumentar repeticiones)`;
+      } else {
+        newSets = currentSets + 1;
+        suggestionText = `Sugerencia: ${newSets}x${newReps} (aumentar sets)`;
+      }
+
+      toast.info(`${goal.exercise_name}: ${suggestionText}`, {
+        description: `Meta anterior: ${currentSets}x${currentReps}. Cumplida: Sí.`,
+        duration: 3000
+      });
+
+      console.log(`[useGoalsManagement] suggestProgression: Goal ${goal.exercise_name} was completed. Suggesting progression to ${newSets} sets, ${newReps} reps.`);
+      return {
+        ...baseGoal,
+        target_sets: newSets,
+        target_reps: newReps,
+        originalGoalId: goal.id,
+        performance: performance,
+        includeInNextMicrocycle: true,
+        user_id: user!.id, // Added missing user_id
+        microcycle: (selectedMicrocycle || 0) + 1, // Added missing microcycle
+      };
+    } else {
+      // Si la meta NO se cumplió, sugerir repetirla tal cual
+      toast.info(`${goal.exercise_name}: Repetir objetivo original`, {
+        description: `Meta anterior: ${goal.target_sets}x${goal.target_reps}. Cumplida: No.`,
+        duration: 3000
+      });
+      console.log(`[useGoalsManagement] suggestProgression: Goal ${goal.exercise_name} was NOT completed. Suggesting to repeat original goal.`);
+      return {
+        ...baseGoal,
+        originalGoalId: goal.id,
+        performance: performance,
+        includeInNextMicrocycle: true,
+        user_id: user!.id, // Added missing user_id
+        microcycle: (selectedMicrocycle || 0) + 1, // Added missing microcycle
+      };
+    }
+  }, []); // Dependencias: Ninguna función externa mutable.
+  
+  // Función para preparar las metas para el wizard del siguiente microciclo
+  const prepareGoalsForNextMicrocycleWizard = useCallback(() => {
+    if (goals.length === 0) {
+      toast.info("No hay metas en el microciclo actual para sugerir un prellenado.");
+      setProposedNextGoals([]); // Asegura que el array esté vacío
+      setIsNextMicrocycleWizardOpen(true); // Abre el wizard, que mostrará "No hay metas"
+      return;
+    }
+  
+    const nextGoals: ProposedGoal[] = goals.map(goal => {
+      const performance = goalsPerformance[goal.id.toString()];
+      if (performance) {
+        return suggestProgression(goal, performance);
+      } else {
+        // Si no hay datos de rendimiento (ej. meta recién añadida y no realizada), copiar la meta tal cual
+        return {
+          ...goal, // Copy existing goal properties
+          user_id: user!.id, // Ensure correct user_id
+          microcycle: (selectedMicrocycle || 0) + 1, // Set next microcycle number
+          originalGoalId: goal.id.toString(),
+          performance: undefined, // No performance data for new goals
+          includeInNextMicrocycle: true,
+          // Remove properties that should not be copied directly or are handled by ...goal
+          id: undefined, // ID should not be copied for a new goal
+          created_at: undefined, // created_at should not be copied
+          updated_at: undefined, // updated_at should not be copied
+          completedSetsCount: undefined, // completedSetsCount should not be copied
+          // target_rpe: undefined, // Ensure target_rpe is not included
+        };
+      }
+    });
+    setProposedNextGoals(nextGoals);
+    setIsNextMicrocycleWizardOpen(true); // Abre el wizard con las metas propuestas
+  }, [goals, goalsPerformance, suggestProgression]); // Dependencias: `goals`, `goalsPerformance`, `suggestProgression`
+  
+  // El manejador anterior `handleCreateNextMicrocycle` se eliminará o ya no se usará.
+  // Este es el nuevo manejador que se conectará al botón "Habilitar Siguiente Microciclo".
+  
+  const handleEnableNextMicrocycle = useCallback(() => {
+    if (!user?.id || selectedMicrocycle === null) {
+      toast.error('Por favor, selecciona un microciclo actual para habilitar el siguiente.');
+      return;
+    }
+    // Llama a la función que prepara los datos y abre el diálogo
+    prepareGoalsForNextMicrocycleWizard();
+  }, [user?.id, selectedMicrocycle, prepareGoalsForNextMicrocycleWizard]);
+
+  // Modificado: Crear el siguiente microciclo con las metas propuestas (sin RPE)
+  const createNextMicrocycleWithProposedGoals = async (goalsToInsert: ProposedGoal[]) => {
+    if (!user?.id || selectedMicrocycle === null) {
+      console.error('[useGoalsManagement] createNextMicrocycleWithProposedGoals: User ID o selectedMicrocycle no disponible.');
+      toast.error('Error al crear microciclo: Usuario no identificado o microciclo actual no seleccionado.');
       return;
     }
 
-    const currentMax = microcycles.length > 0 ? Math.max(...microcycles) : 0;
-    console.log('[useGoalsManagement] handleCreateNextMicrocycle: Iniciando. User ID:', user.id, 'Microciclos actuales:', microcycles, 'Current Max:', currentMax);
+    const nextMicrocycleNumber = (selectedMicrocycle || 0) + 1;
+    console.log(`[useGoalsManagement] createNextMicrocycleWithProposedGoals: Iniciando creación de microciclo ${nextMicrocycleNumber}.`);
     setIsLoadingNextMicrocycle(true);
 
     try {
-      if (microcycles.length === 0) { 
-        const firstMicrocycleNumber = 1;
-        setMicrocycles([firstMicrocycleNumber]);
-        setSelectedMicrocycle(firstMicrocycleNumber);
-        setGoals([]); 
-        console.log('[useGoalsManagement] handleCreateNextMicrocycle: Creando primer microciclo conceptualmente. Estableciendo microcycles a [1] y selectedMicrocycle a 1.');
-        toast.success('¡Microciclo 1 listo para añadir metas!');
-      } else { 
-        await goalService.createNextMicrocycle(user.id, currentMax);
-        console.log('[useGoalsManagement] handleCreateNextMicrocycle: Servicio createNextMicrocycle respondió.');
-        const updatedMicrocycles = await goalService.fetchMicrocyclesForUser(user.id); 
-        setMicrocycles(updatedMicrocycles);
-        setSelectedMicrocycle(currentMax + 1);
-        console.log('[useGoalsManagement] handleCreateNextMicrocycle: Siguiente microciclo creado:', currentMax + 1);
-        toast.success(`¡Microciclo ${currentMax + 1} creado exitosamente!`);
+      // 1. **IMPORTANTE: ELIMINAR la llamada a goalService.createNextMicrocycle (que da 404).**
+      //    Ahora, la existencia del microciclo se infiere cuando se insertan metas con un nuevo número.
+      //    El servicio `bulkCreateGoals` simplemente insertará metas con el `nextMicrocycleNumber`.
+      //    No necesitamos una operación explícita para "crear un microciclo" en la base de datos si no hay una tabla `microcycles`.
+      //    Si en el futuro se crea una tabla 'microcycles', entonces se reintroduciría esta llamada.
+      console.log(`[useGoalsManagement] createNextMicrocycleWithProposedGoals: Preparando para metas del microciclo ${nextMicrocycleNumber}.`);
+      // Si más adelante decides usar una tabla 'microcycles', aquí reintroducirías la llamada.
+      // Por ahora, asumimos que insertar metas con ese número es suficiente para "crearlo".
+
+      // 2. Filtrar y mapear las metas propuestas a `GoalInsert` para la inserción masiva.
+      const goalsToSave: GoalInsert[] = goalsToInsert
+        .filter(g => g.includeInNextMicrocycle)
+        .map(g => ({
+          exercise_name: g.exercise_name,
+          target_sets: g.target_sets, // Use target_sets
+          target_reps: g.target_reps, // Use target_reps
+          comments: g.comments,
+          categories: g.categories,
+          active: g.active,
+          user_id: user.id,
+          microcycle: nextMicrocycleNumber,
+        }));
+
+      if (goalsToSave.length > 0) {
+        console.log(`[useGoalsManagement] createNextMicrocycleWithProposedGoals: Preparando para insertar ${goalsToSave.length} metas.`);
+        await goalService.bulkCreateGoals(goalsToSave);
+        console.log(`[useGoalsManagement] createNextMicrocycleWithProposedGoals: ${goalsToSave.length} metas insertadas en microciclo ${nextMicrocycleNumber}.`);
+      } else {
+        console.log(`[useGoalsManagement] createNextMicrocycleWithProposedGoals: No se seleccionaron metas para insertar en microciclo ${nextMicrocycleNumber}.`);
       }
+
+      toast.success(`¡Microciclo ${nextMicrocycleNumber} habilitado con tus metas!`);
+
+      // 3. Refrescar la lista de microciclos y seleccionar el nuevo.
+      console.log('[useGoalsManagement] createNextMicrocycleWithProposedGoals: Refrescando lista de microciclos y seleccionando el nuevo.');
+      await refreshMicrocycles();
+      setSelectedMicrocycle(nextMicrocycleNumber);
+
+      setIsNextMicrocycleWizardOpen(false);
+      setProposedNextGoals([]);
     } catch (err: any) {
-      console.error('[useGoalsManagement] handleCreateNextMicrocycle: Error creando siguiente microciclo:', err);
-      toast.error(`Error al crear microciclo: ${err.message || 'Error desconocido'}`);
+      console.error('[useGoalsManagement] createNextMicrocycleWithProposedGoals: Error al habilitar microciclo:', err);
+      toast.error(`Error al habilitar microciclo: ${err.message || 'Error desconocido'}`);
     } finally {
       setIsLoadingNextMicrocycle(false);
+      console.log('[useGoalsManagement] createNextMicrocycleWithProposedGoals: Proceso de habilitación finalizado.');
     }
   };
-
+  
   const handleAddGoal = async (formData: GoalInsert) => {
     if (!user?.id || selectedMicrocycle === null) {
       console.error('[useGoalsManagement] handleAddGoal: User ID o selectedMicrocycle no disponible.');
       toast.error('Faltan datos para añadir la meta.');
       return;
     }
-
+  
     console.log('[useGoalsManagement] handleAddGoal: Iniciando con datos:', formData, 'para microciclo:', selectedMicrocycle);
     setIsSubmittingGoal(true);
-
+  
     try {
       const newGoal = await goalService.createGoal({
         ...formData,
         microcycle: selectedMicrocycle
       }, user.id);
-
+  
       if (newGoal) {
         console.log('[useGoalsManagement] handleAddGoal: Servicio createGoal respondió con:', newGoal);
         setGoals(prevGoals => [...prevGoals, newGoal].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()));
@@ -317,7 +505,7 @@ export const useGoalsManagement = () => {
     }
   };
 
-  const handleUpdateGoal = async (goalId: Goal['id'], formData: GoalUpdate) => {
+  const handleUpdateGoal = async (goalId: string, formData: GoalUpdate) => {
     if (!user?.id) {
       console.error('[useGoalsManagement] handleUpdateGoal: User ID no disponible.');
       toast.error('Error al actualizar: Usuario no identificado.');
@@ -346,7 +534,7 @@ export const useGoalsManagement = () => {
     }
   };
 
-  const handleDeleteGoal = async (goalId: Goal['id']) => {
+  const handleDeleteGoal = async (goalId: string) => {
     if (!user?.id) {
       console.error('[useGoalsManagement] handleDeleteGoal: User ID no disponible.');
       toast.error('Error al eliminar: Usuario no identificado.');
@@ -369,7 +557,7 @@ export const useGoalsManagement = () => {
     }
   };
 
-  const handleToggleGoalActive = async (goalId: Goal['id'], currentActiveState: Goal['active']) => {
+  const handleToggleGoalActive = async (goalId: string, currentActiveState: Goal['active']) => {
     if (!user?.id) {
       console.error('[useGoalsManagement] handleToggleGoalActive: User ID no disponible.');
       toast.error('Error al cambiar estado: Usuario no identificado.');
@@ -420,7 +608,7 @@ export const useGoalsManagement = () => {
     error,
     setError, // Expose setError if needed externally
     handleSelectMicrocycle,
-    handleCreateNextMicrocycle,
+    // handleCreateNextMicrocycle, // Old handler removed
     handleAddGoal,
     handleUpdateGoal,
     handleDeleteGoal,
@@ -434,5 +622,14 @@ export const useGoalsManagement = () => {
     handleClearCategoryFilters,
     handleRequestSort,
     refreshMicrocycles,
+  
+    // NUEVAS EXPOSICIONES PARA EL WIZARD
+    isNextMicrocycleWizardOpen,
+    setIsNextMicrocycleWizardOpen,
+    proposedNextGoals,
+    setProposedNextGoals, // Para que el componente del wizard pueda modificar las metas
+    handleEnableNextMicrocycle, // El nuevo botón que inicia el wizard
+    createNextMicrocycleWithProposedGoals, // La función que el wizard llamará al confirmar
+    goalsPerformance // Exponer el rendimiento de las metas para el wizard
   };
 };
