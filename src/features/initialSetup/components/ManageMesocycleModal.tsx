@@ -211,6 +211,8 @@ const ManageMesocycleModal: React.FC<ManageMesocycleModalProps> = ({
     let allSuccessful = true;
     let processedCount = 0;
 
+    console.log('[Modal] Submitting goals. Chosen exercises:', chosenExercises);
+
     for (const chosenEx of chosenExercises) {
       const combinedCategories = [
         ...chosenEx.categories_general,
@@ -233,8 +235,10 @@ const ManageMesocycleModal: React.FC<ManageMesocycleModalProps> = ({
       };
 
       try {
+        console.log(`[Modal] Attempting to add goal for '${goalDataForHook.exercise_name}' with microcycle ${goalDataForHook.microcycle}`);
         await hookHandleAddGoal(goalDataForHook);
         processedCount++;
+        console.log(`[Modal] Successfully added goal for '${goalDataForHook.exercise_name}'.`);
       } catch (err: any) {
         console.error(`[Modal] Error al crear meta para '${goalDataForHook.exercise_name}':`, err);
         allSuccessful = false;

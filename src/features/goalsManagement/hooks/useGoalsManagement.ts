@@ -568,26 +568,41 @@ export const useGoalsManagement = () => {
   };
   
   const handleAddGoal = async (formData: GoalInsert) => {
-    if (!user?.id || selectedMicrocycle === null) {
-      console.error('[useGoalsManagement] handleAddGoal: User ID o selectedMicrocycle no disponible.');
-      toast.error('Faltan datos para añadir la meta.');
+    if (!user?.id) {
+      console.error('[useGoalsManagement] handleAddGoal: User ID no disponible.');
+      toast.error('No se pudo crear la meta: usuario no autenticado.');
+      return;
+    }
+
+    // Use the microcycle number from formData directly, as it's provided by ManageMesocycleModal
+    // and is crucial for creating the *first* microcycle entry.
+    const microcycleToUse = formData.microcycle;
+
+    if (microcycleToUse === undefined || microcycleToUse === null) {
+      console.error('[useGoalsManagement] handleAddGoal: Número de microciclo no disponible en formData.');
+      toast.error('No se pudo crear la meta: número de microciclo no especificado.');
       return;
     }
   
-    console.log('[useGoalsManagement] handleAddGoal: Iniciando con datos:', formData, 'para microciclo:', selectedMicrocycle);
+    console.log('[useGoalsManagement] handleAddGoal: Iniciando con datos:', formData, 'para microciclo:', microcycleToUse);
     setIsSubmittingGoal(true);
   
     try {
-      const newGoal = await goalService.createGoal({
-        ...formData,
-        microcycle: selectedMicrocycle
-      }, user.id);
+      // Pass the formData directly, which includes the correct microcycle number
+      const newGoal = await goalService.createGoal(formData, user.id);
   
       if (newGoal) {
         console.log('[useGoalsManagement] handleAddGoal: Servicio createGoal respondió con:', newGoal);
         setGoals(prevGoals => [...prevGoals, newGoal].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()));
         console.log('[useGoalsManagement] handleAddGoal: Estado de metas actualizado.');
         toast.success('¡Meta añadida exitosamente!');
+        // After adding a goal, refresh microcycles to ensure the new one is picked up
+        await refreshMicrocycles();
+        // If the newly created goal's microcycle is the targetMicrocycleNumber,
+        // ensure it's selected. This might be redundant if refreshMicrocycles handles it.
+        if (newGoal.microcycle === microcycleToUse) { // Compare with the microcycle used for creation
+            // No explicit action needed here, as refreshMicrocycles should handle selection
+        }
       } else {
         console.error('[useGoalsManagement] handleAddGoal: El servicio createGoal no devolvió una nueva meta.');
         toast.error('Error al añadir: no se recibió confirmación.');
