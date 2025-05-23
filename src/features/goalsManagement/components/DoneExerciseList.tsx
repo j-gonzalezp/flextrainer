@@ -1,7 +1,7 @@
 import React from 'react';
 import type { DisplayableDoneExercise } from '../types';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { format } from 'date-fns';
+import { format } from 'date-fns/format';
 import { Badge } from '@/components/ui/badge';
 import { Loader2 } from 'lucide-react';
 
