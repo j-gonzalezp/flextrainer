@@ -1,10 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&display=swap');
 
 @import "tailwindcss";
-
-@import "tw-animate-css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -21,91 +19,84 @@
   --ease-custom: cubic-bezier(0.19, 1, 0.22, 1);
   --duration-default: 280ms;
 
-  /* Core Semantic Colors - Ajustados para ser más oscuros pero armónicos */
-  --color-primary: oklch(55% 0.25 21.1); /* Naranja más oscuro - #D45226 */
+  /* Core Semantic Colors (OKLCH format preferido o HSL) */
+  --color-primary: oklch(62.8% 0.277 21.1); /* ~hsl(21 100% 54%) */
   --color-primary-foreground: oklch(98.04% 0 0); /* ~hsl(0 0% 98%) */
-  --color-secondary: oklch(60% 0.22 230.53); /* Turquesa más oscuro - #0EABC0 */
+  --color-secondary: oklch(69.12% 0.253 230.53); /* ~hsl(187 83% 50%) */
   --color-secondary-foreground: oklch(98.04% 0 0); /* ~hsl(0 0% 98%) */
-  --color-accent: oklch(68% 0.23 76.51); /* Ámbar más oscuro - #E09B2D */
+  --color-accent: oklch(76.08% 0.258 76.51); /* ~hsl(38 100% 47%) */
   --color-accent-foreground: oklch(28.43% 0.045 261.57); /* ~hsl(217 32% 15%) */
-  --color-success: oklch(63% 0.13 159.06); /* Verde más oscuro - #2FB57E */
-  --color-warning: oklch(72% 0.19 77.26); /* Amarillo más oscuro - #E09A2D */
-  --color-destructive: oklch(53% 0.25 14.24); /* Rojo más oscuro - #D93D40 */
-
-  /* Mantenemos el fondo como está */
-  --color-background: oklch(95% 0.015 80); /* ~hsl(32 10% 95%) - #F5F3F0 */
-  --color-foreground: oklch(25% 0.043 70.86); /* Texto principal más oscuro - #231F1A */
+  --color-success: oklch(71.36% 0.131 159.06); /* ~hsl(157 57% 56%) */
+  --color-warning: oklch(80.4% 0.207 77.26); /* ~hsl(37 100% 63%) */
+  --color-destructive: oklch(61.39% 0.268 14.24); /* ~hsl(359 100% 70%) */
+  --color-background: oklch(96.45% 0.021 79.63); /* ~hsl(30 20% 98%) */
+  --color-foreground: oklch(29.6% 0.043 70.86); /* ~hsl(24 32% 15%) */
   --color-muted: oklch(91.58% 0.011 78.47); /* ~hsl(27 10% 92%) */
-  --color-muted-foreground: oklch(38% 0.018 68.55); /* Texto secundario ligeramente más oscuro */
-
-  /* Mantenemos el fondo de tarjeta similar */
-  --color-card: oklch(98% 0.008 85); /* ~hsl(35 5% 98%) - #FCFBF8 */
-  --color-card-foreground: oklch(25% 0.043 70.86); /* Texto más oscuro en tarjetas */
-  --color-popover: oklch(98% 0.008 85); /* ~hsl(35 5% 98%) - #FCFBF8 */
-  --color-popover-foreground: oklch(25% 0.043 70.86); /* ~hsl(24 32% 15%) */
-  --color-border: oklch(82% 0.022 78.47); /* Borde ligeramente más oscuro */
+  --color-muted-foreground: oklch(41.32% 0.018 68.55); /* ~hsl(25 12% 40%) */
+  --color-card: oklch(100% 0 0); /* ~hsl(0 0% 100%) */
+  --color-card-foreground: oklch(29.6% 0.043 70.86); /* ~hsl(24 32% 15%) */
+  --color-popover: oklch(100% 0 0); /* ~hsl(0 0% 100%) */
+  --color-popover-foreground: oklch(29.6% 0.043 70.86); /* ~hsl(24 32% 15%) */
+  --color-border: oklch(91.58% 0.011 78.47); /* ~hsl(27 10% 92%) */
   --color-input: oklch(91.58% 0.011 78.47); /* ~hsl(27 10% 92%) */
-  --color-ring: oklch(55% 0.25 21.1); /* Coincide con el primario */
+  --color-ring: oklch(62.8% 0.277 21.1); /* ~hsl(21 100% 54%) */
 
-  /* Dark Mode Colors - Mejorados para mejor contraste y más oscuros */
-  --color-primary.dark: oklch(62% 0.25 26.24); /* Naranja oscuro para modo oscuro */
+  /* Dark Mode Colors */
+  --color-primary.dark: oklch(68.06% 0.251 26.24); /* ~hsl(18 100% 60%) */
   --color-primary-foreground.dark: oklch(21.58% 0.005 282.91); /* ~hsl(240 5.9% 10%) */
-  --color-secondary.dark: oklch(58% 0.19 259.66); /* Turquesa más oscuro para modo oscuro */
-  --color-accent.dark: oklch(30% 0.035 264.17); /* ~hsl(215 27% 25%) */
-  --color-destructive.dark: oklch(40% 0.226 15.35); /* Rojo más oscuro para modo oscuro */
-  --color-background.dark: oklch(17% 0.032 267.27); /* Fondo más oscuro - #0F1522 */
-  --color-foreground.dark: oklch(96% 0 0); /* ~hsl(0 0% 96%) */
-  --color-card.dark: oklch(25% 0.035 264.17); /* Tarjeta más oscura - #17202F */
-  --color-card-foreground.dark: oklch(96% 0 0);
-  --color-popover.dark: oklch(25% 0.045 261.57); /* Popover más oscuro */
-  --color-popover-foreground.dark: oklch(96% 0 0);
-  --color-muted.dark: oklch(30% 0.035 264.17); /* Muted más oscuro */
+  --color-secondary.dark: oklch(65.37% 0.193 259.66); /* ~hsl(217 71% 58%) */
+  --color-accent.dark: oklch(36.21% 0.035 264.17); /* ~hsl(215 27% 25%) */
+  --color-destructive.dark: oklch(46.02% 0.226 15.35); /* ~hsl(0 62.8% 30.6%) */
+  --color-background.dark: oklch(25.1% 0.032 267.27); /* ~hsl(222 47% 11%) */
+  --color-foreground.dark: oklch(98.04% 0 0); /* ~hsl(0 0% 98%) */
+  --color-card.dark: oklch(36.21% 0.035 264.17); /* ~hsl(215 27% 25%) */
+  --color-card-foreground.dark: oklch(98.04% 0 0);
+  --color-popover.dark: oklch(28.43% 0.045 261.57); /* ~hsl(217 32% 15%) */
+  --color-popover-foreground.dark: oklch(98.04% 0 0);
+  --color-muted.dark: oklch(36.21% 0.035 264.17); /* ~hsl(215 27% 25%) */
   --color-muted-foreground.dark: oklch(67.03% 0.016 265.6); /* ~hsl(215 14% 65%) */
-  --color-border.dark: oklch(35% 0.035 264.17); /* Borde más oscuro - #272E3F */
-  --color-input.dark: oklch(30% 0.035 264.17); /* Input más oscuro */
-  --color-ring.dark: oklch(96% 0 0); /* ~hsl(0 0% 96%) */
+  --color-border.dark: oklch(36.21% 0.035 264.17); /* ~hsl(215 27% 25%) */
+  --color-input.dark: oklch(36.21% 0.035 264.17); /* ~hsl(215 27% 25%) */
+  --color-ring.dark: oklch(98.04% 0 0); /* ~hsl(0 0% 98%) */
 
-  /* Navbar específico más oscuro */
-  --color-navbar: oklch(25% 0.045 261.57); /* Navbar más oscuro - #192533 */
-  --color-navbar-foreground: oklch(98.04% 0 0); /* ~hsl(0 0% 98%) */
-  --color-navbar.dark: oklch(18% 0.035 264.17); /* Navbar aún más oscuro - #111824 */
-  --color-navbar-foreground.dark: oklch(98.04% 0 0);
+  /* Brand Colors (Tailwind generará text-brand-orange, bg-brand-orange, etc.) */
+  --color-brand-orange: #FF6B35;
+  --color-brand-turquoise: #1ECBE1;
+  --color-brand-success: #4ED1A1;
+  --color-brand-warning: #FFB344;
+  --color-brand-error: #FF686B;
+  /* Para el borde específico de brand-warning que era diferente */
+  --color-brand-warning-border: #FF686B;
 
-  /* Brand Colors actualizados */
-  --color-brand-orange: #D45226; /* Naranja más oscuro */
-  --color-brand-turquoise: #0EABC0; /* Turquesa más oscuro */
-  --color-brand-success: #2FB57E; /* Verde más oscuro */
-  --color-brand-warning: #E09A2D; /* Amarillo más oscuro */
-  --color-brand-error: #D93D40; /* Rojo más oscuro */
-  --color-brand-warning-border: #D93D40; /* Borde de advertencia coincide con error */
 
-  /* Fonts - Mantenidos igual */
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  /* Fonts */
+  --font-sans: 'Inter', sans-serif;
   --font-heading: 'Clash Display', sans-serif;
   --font-accent: 'Space Grotesk', monospace;
 
-  /* Spacing - Mantenido igual */
+  /* Spacing */
   --spacing-1_5: 6px;
   --spacing-3_5: 14px;
   --spacing-4_5: 18px;
   --spacing-5_5: 22px;
 
-  /* Radii - Mantenido igual */
+  /* Radii */
   --radius: 0.5rem;
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
 
-  /* Shadows - Ajustados para ser más pronunciados */
-  --shadow-card-custom: 2px 3px 12px -2px rgba(0, 0, 0, 0.15);
-  --shadow-elevated: 3px 4px 15px -1px rgba(0, 0, 0, 0.18);
-  --shadow-navbar: 0 2px 12px rgba(0, 0, 0, 0.12);
+  /* Shadows */
+  --shadow-card-custom: 2px 3px 10px -2px rgba(0, 0, 0, 0.1);
+  --shadow-elevated: 3px 4px 12px -1px rgba(0, 0, 0, 0.12);
+  /* Tailwind incluye shadow-xs, sm, md, lg, xl, 2xl por defecto. Si estos son adicionales, está bien. */
 
-  /* Border Widths - Mantenido igual */
+  /* Border Widths */
   --border-width-3: 3px;
+  /* Tailwind incluye border-width-0, 1(default), 2, 4, 8. Si 3 es específico, está bien. */
 
-  /* Animations - Mantenido igual */
+  /* Animations */
   --animate-fade-in-up: fade-in-up var(--duration-default) var(--ease-custom);
   --animate-pulse-subtle: pulse-subtle 2s var(--ease-custom) infinite;
 }
@@ -123,93 +114,24 @@
 
   h1, h2, h3, h4, h5, h6 {
      font-family: var(--font-heading);
-     font-weight: 600;
-  }
-
-  /* Font weight utilities */
-  .font-light {
-    font-weight: 300;
-  }
-  .font-normal {
-    font-weight: 400;
-  }
-  .font-medium {
-    font-weight: 500;
-  }
-  .font-semibold {
-    font-weight: 600;
-  }
-  .font-bold {
-    font-weight: 700;
-  }
-  .font-extrabold {
-    font-weight: 800;
-  }
-
-  /* Font style utilities */
-  .italic {
-    font-style: italic;
   }
 }
 
 @layer components {
-  /* Navbar specific styles */
-  .navbar {
-    @apply bg-navbar text-navbar-foreground;
-    box-shadow: var(--shadow-navbar);
-    padding: 0.75rem 1rem;
-    position: sticky;
-    top: 0;
-    z-index: 50;
-  }
-
-  .navbar-brand {
-    font-family: var(--font-heading);
-    font-weight: 600;
-    font-size: 1.25rem;
-  }
-
-  .workout-card {
-    @apply bg-card text-card-foreground rounded-md shadow-card-custom;
-    border: 1px solid hsl(var(--color-border));
-    padding: 1.5rem;
-    transition: transform var(--duration-default) var(--ease-custom),
-                box-shadow var(--duration-default) var(--ease-custom);
-  }
-
-  .workout-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-elevated);
-  }
-
-  .workout-title {
-    font-family: var(--font-heading);
-    font-weight: 600;
-    font-size: 1.5rem;
-    color: hsl(var(--color-primary));
-    margin-bottom: 0.5rem;
-  }
-
-  .workout-subtitle {
-    font-family: var(--font-sans);
-    font-weight: 400;
-    font-size: 0.875rem;
-    color: hsl(var(--color-muted-foreground));
-    margin-bottom: 1.5rem;
-  }
-
   .btn-primary-custom {
     @apply bg-primary text-primary-foreground shadow-xs relative overflow-hidden;
-    transition-property: background-color, box-shadow, transform;
+    /* --shadow-xs debe ser una utilidad de Tailwind o definida en @theme */
+    /* Para el shadow-xs por defecto de Tailwind: shadow-xs */
+    transition-property: background-color, box-shadow, transform; /* Ser más específico */
     transition-duration: var(--duration-default);
     transition-timing-function: var(--ease-custom);
-    border-radius: var(--radius);
-    padding: 0.5rem 1rem;
-    font-weight: 500;
   }
 
   .btn-primary-custom:hover {
-    filter: brightness(1.1);
+    /* Para el hover, es mejor definir un color hover o usar utilidades de Tailwind */
+    /* Ej: @apply hover:bg-primary-hover; (definiendo --color-primary-hover en @theme) */
+    /* O un simple filter */
+    filter: brightness(1.1); /* Ajusta el brillo */
     box-shadow: var(--shadow-elevated);
   }
 
@@ -229,62 +151,14 @@
 
   .btn-outline-custom {
     @apply border border-border bg-background text-foreground shadow-xs;
+    /* Para el shadow-xs por defecto de Tailwind: shadow-xs */
     transition-property: background-color, color, box-shadow;
     transition-duration: var(--duration-default);
     transition-timing-function: var(--ease-custom);
-    border-radius: var(--radius);
-    padding: 0.5rem 1rem;
-    font-weight: 500;
   }
-
   .btn-outline-custom:hover {
     @apply bg-muted text-muted-foreground;
     box-shadow: var(--shadow-card-custom);
-  }
-
-  .btn-secondary-custom {
-    @apply bg-secondary text-secondary-foreground shadow-xs relative overflow-hidden;
-    transition-property: background-color, box-shadow, transform;
-    transition-duration: var(--duration-default);
-    transition-timing-function: var(--ease-custom);
-    border-radius: var(--radius);
-    padding: 0.5rem 1rem;
-    font-weight: 500;
-  }
-
-  .btn-secondary-custom:hover {
-    filter: brightness(1.1);
-    box-shadow: var(--shadow-elevated);
-  }
-
-  .btn-success-custom {
-    @apply bg-success text-primary-foreground shadow-xs relative overflow-hidden;
-    transition-property: background-color, box-shadow, transform;
-    transition-duration: var(--duration-default);
-    transition-timing-function: var(--ease-custom);
-    border-radius: var(--radius);
-    padding: 0.5rem 1rem;
-    font-weight: 500;
-  }
-
-  .btn-success-custom:hover {
-    filter: brightness(1.1);
-    box-shadow: var(--shadow-elevated);
-  }
-
-  .btn-warning-custom {
-    @apply bg-warning text-primary-foreground shadow-xs relative overflow-hidden;
-    transition-property: background-color, box-shadow, transform;
-    transition-duration: var(--duration-default);
-    transition-timing-function: var(--ease-custom);
-    border-radius: var(--radius);
-    padding: 0.5rem 1rem;
-    font-weight: 500;
-  }
-
-  .btn-warning-custom:hover {
-    filter: brightness(1.1);
-    box-shadow: var(--shadow-elevated);
   }
 
   .card-rounded-custom {
@@ -295,13 +169,15 @@
   }
 
   .card-pattern {
+    /* Este usa --color-background, que es un HSL. Para hsla, el canal alfa debe estar al final. */
+    /* Asumiendo que quieres una opacidad del 5%: */
     background-image: repeating-linear-gradient(-45deg, hsla(var(--color-background), 0.05), hsla(var(--color-background), 0.05) 2px, transparent 2px, transparent 4px);
   }
 
   .card-border-top-primary {
     border-top-width: var(--border-width-3);
     border-top-color: hsl(var(--color-primary));
-    @apply border-l border-r border-b border-border;
+    @apply border-l border-r border-b border-border; /* Usa la variable de tema para el color de borde estándar */
   }
 
   .input-underline-active {
@@ -315,7 +191,8 @@
     box-shadow: 0 1px 0 0 hsl(var(--color-primary));
   }
 
-  .input-underline-active.focus-visible:ring,
+  /* Override para el anillo de foco de shadcn/ui (último recurso) */
+  .input-underline-active.focus-visible:ring, /* Simplificado, asumiendo que .focus-visible:ring es un selector común */
   .input-underline-active.focus-visible:ring-offset,
   .input-underline-active.focus-visible:ring-opacity {
       --tw-ring-color: transparent !important;
@@ -327,12 +204,13 @@
   }
 
   .checkbox-custom {
-    border-radius: 2px;
+    border-radius: 2px; /* Simplificado a un radio pequeño estándar */
     @apply flex items-center justify-center;
   }
 
   .radio-custom {
     @apply appearance-none inline-block w-4 h-4 border-2 border-border rounded-full relative;
+    /* w-4 y h-4 son 1rem por defecto */
     transition: border-color var(--duration-default) var(--ease-custom);
   }
 
@@ -343,6 +221,7 @@
   .radio-custom:checked::before {
     content: '';
     @apply block w-2 h-2 bg-primary rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2;
+    /* w-2 y h-2 son 0.5rem por defecto */
   }
 
   .radio-custom:focus-visible {
@@ -351,92 +230,16 @@
   }
 
   .navlink-subtle-active {
-    @apply opacity-100 scale-105;
+    @apply opacity-100 scale-105; /* scale-105 es una utilidad común */
     transition: opacity var(--duration-default) var(--ease-custom), transform var(--duration-default) var(--ease-custom);
-  }
-
-  /* Exercise specific styles */
-  .exercise-card {
-    @apply bg-card text-card-foreground rounded-md shadow-card-custom;
-    border: 1px solid hsl(var(--color-border));
-    padding: 1rem;
-    margin-bottom: 1rem;
-  }
-
-  .exercise-title {
-    font-family: var(--font-heading);
-    font-weight: 600;
-    font-size: 1.25rem;
-    color: hsl(var(--color-primary));
-    margin-bottom: 0.5rem;
-  }
-
-  .exercise-objective {
-    font-family: var(--font-sans);
-    font-weight: 400;
-    font-size: 0.875rem;
-    color: hsl(var(--color-muted-foreground));
-  }
-
-  .microcycle-pill {
-    @apply bg-secondary text-secondary-foreground;
-    border-radius: 9999px;
-    padding: 0.25rem 0.75rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    display: inline-block;
-  }
-
-  .category-pill {
-    @apply bg-muted text-muted-foreground;
-    border-radius: 9999px;
-    padding: 0.25rem 0.75rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    display: inline-block;
   }
 }
 
+/* @layer utilities ya no es necesario si las brand colors están en @theme */
+/* Tailwind generará .text-brand-orange, .bg-brand-orange, etc. */
+/* Si necesitas la .border-brand-warning específica con el color de error: */
 @layer utilities {
   .border-brand-warning-specific {
     border-color: hsl(var(--color-brand-warning-border));
-  }
-
-  /* Font family utilities */
-  .font-sans {
-    font-family: var(--font-sans);
-  }
-  .font-heading {
-    font-family: var(--font-heading);
-  }
-  .font-accent {
-    font-family: var(--font-accent);
-  }
-
-  /* Text gradient utility */
-  .text-gradient-primary {
-    background: linear-gradient(90deg, hsl(var(--color-primary)) 0%, hsl(var(--color-secondary)) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    color: transparent;
-  }
-}
-
-@theme inline { --radius-sm: calc(var(--radius) - 4px); --radius-md: calc(var(--radius) - 2px); --radius-lg: var(--radius); --radius-xl: calc(var(--radius) + 4px); --color-background: var(--background); --color-foreground: var(--foreground); --color-card: var(--card); --color-card-foreground: var(--card-foreground); --color-popover: var(--popover); --color-popover-foreground: var(--popover-foreground); --color-primary: var(--primary); --color-primary-foreground: var(--primary-foreground); --color-secondary: var(--secondary); --color-secondary-foreground: var(--secondary-foreground); --color-muted: var(--muted); --color-muted-foreground: var(--muted-foreground); --color-accent: var(--accent); --color-accent-foreground: var(--accent-foreground); --color-destructive: var(--destructive); --color-border: var(--border); --color-input: var(--input); --color-ring: var(--ring); --color-chart-1: var(--chart-1); --color-chart-2: var(--chart-2); --color-chart-3: var(--chart-3); --color-chart-4: var(--chart-4); --color-chart-5: var(--chart-5); --color-sidebar: var(--sidebar); --color-sidebar-foreground: var(--sidebar-foreground); --color-sidebar-primary: var(--sidebar-primary); --color-sidebar-primary-foreground: var(--sidebar-primary-foreground); --color-sidebar-accent: var(--sidebar-accent); --color-sidebar-accent-foreground: var(--sidebar-accent-foreground); --color-sidebar-border: var(--sidebar-border); --color-sidebar-ring: var(--sidebar-ring);
-}
-
-:root { --radius: 0.625rem; --background: oklch(1 0 0); --foreground: oklch(0.145 0 0); --card: oklch(1 0 0); --card-foreground: oklch(0.145 0 0); --popover: oklch(1 0 0); --popover-foreground: oklch(0.145 0 0); --primary: oklch(0.205 0 0); --primary-foreground: oklch(0.985 0 0); --secondary: oklch(0.97 0 0); --secondary-foreground: oklch(0.205 0 0); --muted: oklch(0.97 0 0); --muted-foreground: oklch(0.556 0 0); --accent: oklch(0.97 0 0); --accent-foreground: oklch(0.205 0 0); --destructive: oklch(0.577 0.245 27.325); --border: oklch(0.922 0 0); --input: oklch(0.922 0 0); --ring: oklch(0.708 0 0); --chart-1: oklch(0.646 0.222 41.116); --chart-2: oklch(0.6 0.118 184.704); --chart-3: oklch(0.398 0.07 227.392); --chart-4: oklch(0.828 0.189 84.429); --chart-5: oklch(0.769 0.188 70.08); --sidebar: oklch(0.985 0 0); --sidebar-foreground: oklch(0.145 0 0); --sidebar-primary: oklch(0.205 0 0); --sidebar-primary-foreground: oklch(0.985 0 0); --sidebar-accent: oklch(0.97 0 0); --sidebar-accent-foreground: oklch(0.205 0 0); --sidebar-border: oklch(0.922 0 0); --sidebar-ring: oklch(0.708 0 0);
-}
-
-.dark { --background: oklch(0.145 0 0); --foreground: oklch(0.985 0 0); --card: oklch(0.205 0 0); --card-foreground: oklch(0.985 0 0); --popover: oklch(0.205 0 0); --popover-foreground: oklch(0.985 0 0); --primary: oklch(0.922 0 0); --primary-foreground: oklch(0.205 0 0); --secondary: oklch(0.269 0 0); --secondary-foreground: oklch(0.985 0 0); --muted: oklch(0.269 0 0); --muted-foreground: oklch(0.708 0 0); --accent: oklch(0.269 0 0); --accent-foreground: oklch(0.985 0 0); --destructive: oklch(0.704 0.191 22.216); --border: oklch(1 0 0 / 10%); --input: oklch(1 0 0 / 15%); --ring: oklch(0.556 0 0); --chart-1: oklch(0.488 0.243 264.376); --chart-2: oklch(0.696 0.17 162.48); --chart-3: oklch(0.769 0.188 70.08); --chart-4: oklch(0.627 0.265 303.9); --chart-5: oklch(0.645 0.246 16.439); --sidebar: oklch(0.205 0 0); --sidebar-foreground: oklch(0.985 0 0); --sidebar-primary: oklch(0.488 0.243 264.376); --sidebar-primary-foreground: oklch(0.985 0 0); --sidebar-accent: oklch(0.269 0 0); --sidebar-accent-foreground: oklch(0.985 0 0); --sidebar-border: oklch(1 0 0 / 10%); --sidebar-ring: oklch(0.556 0 0);
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
   }
 }
