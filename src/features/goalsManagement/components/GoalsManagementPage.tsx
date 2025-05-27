@@ -96,7 +96,7 @@ const GoalsManagementPage: React.FC = () => {
   if (!user) {
     return (
       <div className="flex flex-col items-center justify-center p-8 text-center min-h-[calc(100vh-var(--navbar-height,4rem))]">
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-md card-rounded-custom">
           <CardHeader>
             <CardTitle>Acceso Requerido</CardTitle>
           </CardHeader>
@@ -131,7 +131,7 @@ const GoalsManagementPage: React.FC = () => {
         <p className="text-sm sm:text-base text-muted-foreground mt-1">Organiza y planifica tus objetivos de entrenamiento por microciclos.</p>
       </header>
 
-      <Card className="shadow-elevated">
+      <Card className="card-rounded-custom">
         <CardHeader>
           <CardTitle>Selector de Microciclos</CardTitle>
           <ShadcnCardDescription>
@@ -168,7 +168,7 @@ const GoalsManagementPage: React.FC = () => {
                 setIsCreateFirstMicrocycleModalOpen(true); // This state will control the renamed modal
               }}
               disabled={isLoadingNextMicrocycle || isSubmittingGoal || isLoadingMicrocycles}
-              className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground transition-colors mr-2"
+              className="w-full sm:w-auto btn-primary-custom mr-2"
               size="sm"
             >
               {isLoadingNextMicrocycle && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -190,7 +190,7 @@ const GoalsManagementPage: React.FC = () => {
     selectedMicrocycle === null ||
     (selectedMicrocycle !== null && displayedGoals.length === 0) // Deshabilita si el microciclo seleccionado no tiene metas
   }
-  className="flex-shrink-0 bg-secondary hover:bg-secondary/90 text-secondary-foreground transition-colors"
+  className="flex-shrink-0 btn-primary-custom"
   size="sm"
 >
   {isLoadingNextMicrocycle && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -214,7 +214,7 @@ const GoalsManagementPage: React.FC = () => {
                   <Button
                     onClick={openGoalFormForCreate}
                     disabled={isSubmittingGoal || isLoadingGoals}
-                    className="w-full sm:w-auto flex-shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
+                    className="w-full sm:w-auto flex-shrink-0 btn-primary-custom"
                     size="sm"
                   >
                     Añadir Nueva Meta
@@ -276,7 +276,7 @@ const GoalsManagementPage: React.FC = () => {
       )}
 
       {selectedMicrocycle !== null && (
-        <Card className="mt-5.5 shadow-elevated">
+        <Card className="mt-5.5 card-rounded-custom">
           <CardHeader>
             <CardTitle>Ejercicios Completados</CardTitle>
             <ShadcnCardDescription>Historial de sets registrados para este microciclo.</ShadcnCardDescription>

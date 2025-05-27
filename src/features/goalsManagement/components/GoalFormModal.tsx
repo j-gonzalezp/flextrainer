@@ -64,7 +64,7 @@ const GoalFormModal: React.FC<GoalFormModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[480px] max-h-[90vh] overflow-y-auto animate-fade-in-up">
+      <DialogContent className="sm:max-w-[480px] max-h-[90vh] overflow-y-auto animate-fade-in-up card-rounded-custom">
         <DialogHeader>
           <DialogTitle>{editingGoal ? 'Editar Meta' : 'Añadir Nueva Meta'}</DialogTitle>
           {editingGoal && (
@@ -179,7 +179,7 @@ const GoalFormModal: React.FC<GoalFormModalProps> = ({
             </Label>
           </div>
 
-          {error && <p className="text-sm text-red-500 bg-red-100 p-2 rounded-md">{error}</p>}
+          {error && <p className="text-sm text-red-700 bg-slate-50 p-2 rounded-md">{error}</p>}
 
           <DialogFooter className="pt-4">
             <Button type="button" variant="outline" onClick={onClose} disabled={isLoading} className="btn-outline-custom">

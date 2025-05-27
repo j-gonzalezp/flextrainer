@@ -197,9 +197,9 @@ const RestTimerControl: React.FC<RestTimerControlProps> = ({
   };
 
   return (
-    <div className="flex items-center justify-center space-x-4 p-6 border rounded-lg bg-white shadow-sm">
+    <div className="timer-display-custom">
       <div className="flex flex-col items-center space-y-2">
-        <Label className="text-sm font-medium text-gray-600">Rest Timer</Label>
+        <Label className="text-sm font-medium text-slate-600">Rest Timer</Label>
         
         {isEditing ? (
           <div className="flex items-center space-x-1">
@@ -215,7 +215,7 @@ const RestTimerControl: React.FC<RestTimerControlProps> = ({
               maxLength={2}
               autoFocus
             />
-            <span className="text-4xl font-mono text-gray-600">:</span>
+            <span className="text-4xl font-mono text-slate-600">:</span>
             <input
               id="seconds-input"
               type="text"
@@ -230,11 +230,11 @@ const RestTimerControl: React.FC<RestTimerControlProps> = ({
           </div>
         ) : (
           <div 
-            className={`text-4xl font-mono cursor-pointer px-4 py-2 rounded transition-colors ${
+            className={`timer-number-custom cursor-pointer px-4 py-2 rounded transition-colors ${
               !isRestTimerRunning 
-                ? 'hover:bg-gray-100 text-blue-600' 
+                ? 'hover:bg-gray-100 text-blue-700' 
                 : 'text-gray-800'
-            } ${restTimerSeconds === 0 ? 'text-red-500 font-bold' : ''}`}
+            } ${restTimerSeconds === 0 ? 'text-red-700 font-bold' : ''}`}
             onClick={handleTimeClick}
             title={!isRestTimerRunning ? "Click to edit time" : ""}
           >
@@ -243,7 +243,7 @@ const RestTimerControl: React.FC<RestTimerControlProps> = ({
         )}
         
         {!isEditing && !isRestTimerRunning && (
-          <p className="text-xs text-gray-400">Click to edit • Tab/: to switch • Enter to save</p>
+          <p className="text-xs text-slate-600">Click to edit • Tab/: to switch • Enter to save</p>
         )}
       </div>
 
@@ -253,8 +253,8 @@ const RestTimerControl: React.FC<RestTimerControlProps> = ({
           disabled={isEditing}
           className={`px-6 ${
             isRestTimerRunning 
-              ? 'bg-orange-500 hover:bg-orange-600' 
-              : 'bg-green-500 hover:bg-green-600'
+              ? 'btn-warning-custom' 
+              : 'btn-primary-custom'
           }`}
         >
           {isRestTimerRunning ? 'Pause' : 'Start'}
@@ -264,14 +264,14 @@ const RestTimerControl: React.FC<RestTimerControlProps> = ({
           variant="outline" 
           onClick={handleReset}
           disabled={isEditing}
-          className="px-6"
+          className="px-6 btn-outline-custom"
         >
           Reset
         </Button>
       </div>
 
       {restTimerSeconds === 0 && (
-        <div className="text-red-500 font-semibold animate-pulse">
+        <div className="text-red-700 font-semibold animate-pulse">
           Time's up! 🔔
         </div>
       )}

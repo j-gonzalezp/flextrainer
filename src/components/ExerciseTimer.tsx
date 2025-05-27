@@ -156,7 +156,7 @@ const ExerciseTimer = React.forwardRef<TimerRef | null, ExerciseTimerProps>( // 
 
     return (
       <div className="flex items-center space-x-4">
-        <div className={`text-xl font-mono ${isCompleted ? 'text-green-500' : 'text-blue-500'}`}>
+        <div className="timer-number-custom">
           {formatTime(timeLeft)}
         </div>
         <button
@@ -174,7 +174,7 @@ const ExerciseTimer = React.forwardRef<TimerRef | null, ExerciseTimerProps>( // 
             </svg>
           )}
         </button>
-        {isCompleted && <span className="text-sm text-green-600">¡Hecho!</span>}
+        {isCompleted && <span className="tag-success-custom">¡Hecho!</span>}
       </div>
     );
   }

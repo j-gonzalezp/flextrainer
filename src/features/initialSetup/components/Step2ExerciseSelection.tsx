@@ -54,7 +54,7 @@ const SuggestedExerciseItem: React.FC<SuggestedExerciseItemProps> = ({
   }, [chosenExercises]);
 
   return (
-    <Card className={`mb-3 ${depth > 0 ? 'ml-4 border-l-2 border-blue-200 pl-3' : ''} bg-card`}>
+    <Card className={`mb-3 ${depth > 0 ? 'ml-4 border-l-2 border-blue-200 pl-3' : ''} card-rounded-custom`}>
       <CardHeader className="p-3">
         <div className="flex items-start space-x-3">
           <Checkbox
@@ -68,10 +68,10 @@ const SuggestedExerciseItem: React.FC<SuggestedExerciseItemProps> = ({
               {exercise.exercise_name}
             </Label>
             {exercise.description && (
-              <p className="text-xs text-muted-foreground mt-0.5">{exercise.description}</p>
+              <p className="text-xs text-slate-600 mt-0.5">{exercise.description}</p>
             )}
             {exercise.equipment_needed && exercise.equipment_needed.length > 0 && (
-                <p className="text-xs text-muted-foreground mt-0.5">Equipamiento: {exercise.equipment_needed.join(', ')}</p>
+                <p className="text-xs text-slate-600 mt-0.5">Equipamiento: {exercise.equipment_needed.join(', ')}</p>
             )}
           </div>
         </div>
@@ -86,7 +86,7 @@ const SuggestedExerciseItem: React.FC<SuggestedExerciseItemProps> = ({
                 <div className="mt-2 space-y-2 pl-4 border-l border-dashed">
                     {isLoadingVariations && <div className="flex justify-center py-2"><Loader2 className="h-4 w-4 animate-spin" /></div>}
                     {!isLoadingVariations && variationObjects.length === 0 && (
-                        <p className="text-xs text-muted-foreground">No se encontraron detalles para estas variaciones o no están disponibles.</p>
+                        <p className="text-xs text-slate-600">No se encontraron detalles para estas variaciones o no están disponibles.</p>
                     )}
                     {!isLoadingVariations && variationObjects.map(variationEx => (
                         <SuggestedExerciseItem 
@@ -200,7 +200,7 @@ const Step2ExerciseSelection: React.FC<Step2ExerciseSelectionProps> = ({
         <CardContent>
           {isLoading && <div className="flex justify-center py-4"><Loader2 className="h-6 w-6 animate-spin" /></div>}
           {!isLoading && suggestedExercises.length === 0 && (
-            <p className="text-center text-muted-foreground py-4">No hay ejercicios sugeridos para tus filtros actuales. Intenta cambiar tus selecciones en el Paso 1 o añade ejercicios personalizados abajo.</p>
+            <p className="text-center text-slate-600 py-4">No hay ejercicios sugeridos para tus filtros actuales. Intenta cambiar tus selecciones en el Paso 1 o añade ejercicios personalizados abajo.</p>
           )}
           {!isLoading && suggestedExercises.length > 0 && (
             <ScrollArea className="h-[300px] pr-3">
@@ -238,7 +238,7 @@ const Step2ExerciseSelection: React.FC<Step2ExerciseSelectionProps> = ({
           </div>
           
           {isLoadingMetadata ? (
-            <p className="text-center text-muted-foreground">Cargando opciones de categorías...</p>
+            <p className="text-center text-slate-600">Cargando opciones de categorías...</p>
           ) : (
             <div className='p-3 border rounded-md bg-muted/30'>
               <Label className="text-sm font-medium mb-2 block">Categorías para este Ejercicio Personalizado:</Label>
@@ -249,7 +249,7 @@ const Step2ExerciseSelection: React.FC<Step2ExerciseSelectionProps> = ({
                 {allAvailableGeneralCategories.length > 0 ? (
                   allAvailableGeneralCategories.map(cat => (
                     <div key={`custom-add-gen-${cat}`} className="flex items-center space-x-2">
-                      <Checkbox 
+                      <Checkbox
                         id={`custom-add-gen-${cat}`}
                         checked={customGeneralCategories.includes(cat)}
                         onCheckedChange={() => handleCustomCategoryGeneralToggle(cat)}
@@ -258,7 +258,7 @@ const Step2ExerciseSelection: React.FC<Step2ExerciseSelectionProps> = ({
                     </div>
                   ))
                 ) : (
-                  <p className="col-span-full text-xs text-muted-foreground">No hay categorías generales disponibles.</p>
+                  <p className="col-span-full text-xs text-slate-600">No hay categorías generales disponibles.</p>
                 )}
               </div>
 
@@ -295,15 +295,15 @@ const Step2ExerciseSelection: React.FC<Step2ExerciseSelectionProps> = ({
           </CardHeader>
           <CardContent>
             {hasUncategorizedCustomExercise && (
-              <p className="text-sm text-red-500 mb-2">¡Atención! Algunos ejercicios personalizados aún no tienen categoría general asignada y no podrás avanzar.</p>
+              <p className="text-sm text-red-700 mb-2">¡Atención! Algunos ejercicios personalizados aún no tienen categoría general asignada y no podrás avanzar.</p>
             )}
             <ScrollArea className="h-[150px] pr-3">
               <ul className="list-disc pl-5 space-y-1 text-sm">
                 {chosenExercises.map(ex => (
                   <li key={ex.id}>
-                    {ex.exercise_name} 
-                    {ex.is_custom ? <span className="text-xs text-blue-500 font-medium ml-1">(Personalizado)</span> : ''}
-                    {ex.is_custom && ex.categories_general.length === 0 && <span className="text-xs text-red-500 font-medium ml-1">(¡Falta categoría!)</span>}
+                    {ex.exercise_name}
+                    {ex.is_custom ? <span className="text-xs text-blue-700 font-medium ml-1">(Personalizado)</span> : ''}
+                    {ex.is_custom && ex.categories_general.length === 0 && <span className="text-xs text-red-700 font-medium ml-1">(¡Falta categoría!)</span>}
                   </li>
                 ))}
               </ul>

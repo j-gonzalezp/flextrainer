@@ -114,12 +114,12 @@ const PerformanceLogger: React.FC<PerformanceLoggerProps> = ({
   };
 
   return (
-    <Card className="shadow-elevated border-primary/20 animate-fade-in-up"> {/* Added a subtle border */}
+    <Card className="card-rounded-custom"> {/* Added a subtle border */}
       <CardHeader>
-        <CardTitle className="text-xl">
+        <CardTitle className="text-xl text-slate-900">
           Registrar Set: {goal?.exercise_name || 'Ejercicio Actual'}
         </CardTitle>
-        <CardDescription>Anota los detalles del set que realizaste.</CardDescription>
+        <CardDescription className="text-slate-600">Anota los detalles del set que realizaste.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4.5">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4.5">
@@ -193,7 +193,7 @@ const PerformanceLogger: React.FC<PerformanceLoggerProps> = ({
             variant="outline"
             onClick={onCancel}
             disabled={isSubmitting}
-            className="w-full sm:w-auto border-muted-foreground/30 text-foreground hover:bg-muted/50 hover:border-primary/50 transition-colors"
+            className="btn-outline-custom"
           >
             Cancelar
           </Button>
@@ -204,7 +204,7 @@ const PerformanceLogger: React.FC<PerformanceLoggerProps> = ({
               (goal?.reps !== undefined && goal?.reps !== null && !performanceReps) ||
               (goal?.duration_seconds !== undefined && goal?.duration_seconds !== null && !performanceDuration)
             }
-            className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
+            className="btn-primary-custom"
           >
             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             Registrar Set

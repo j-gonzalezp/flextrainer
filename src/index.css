@@ -1,9 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&display=swap');
-
 @import "tailwindcss";
-
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
@@ -15,64 +11,50 @@
     0%, 100% { opacity: 1; }
     50% { opacity: 0.85; }
   }
-
+  
   --ease-custom: cubic-bezier(0.19, 1, 0.22, 1);
   --duration-default: 280ms;
 
-  /* Core Semantic Colors (OKLCH format preferido o HSL) */
-  --color-primary: oklch(62.8% 0.277 21.1); /* ~hsl(21 100% 54%) */
-  --color-primary-foreground: oklch(98.04% 0 0); /* ~hsl(0 0% 98%) */
-  --color-secondary: oklch(69.12% 0.253 230.53); /* ~hsl(187 83% 50%) */
-  --color-secondary-foreground: oklch(98.04% 0 0); /* ~hsl(0 0% 98%) */
-  --color-accent: oklch(76.08% 0.258 76.51); /* ~hsl(38 100% 47%) */
-  --color-accent-foreground: oklch(28.43% 0.045 261.57); /* ~hsl(217 32% 15%) */
-  --color-success: oklch(71.36% 0.131 159.06); /* ~hsl(157 57% 56%) */
-  --color-warning: oklch(80.4% 0.207 77.26); /* ~hsl(37 100% 63%) */
-  --color-destructive: oklch(61.39% 0.268 14.24); /* ~hsl(359 100% 70%) */
-  --color-background: oklch(96.45% 0.021 79.63); /* ~hsl(30 20% 98%) */
-  --color-foreground: oklch(29.6% 0.043 70.86); /* ~hsl(24 32% 15%) */
-  --color-muted: oklch(91.58% 0.011 78.47); /* ~hsl(27 10% 92%) */
-  --color-muted-foreground: oklch(41.32% 0.018 68.55); /* ~hsl(25 12% 40%) */
-  --color-card: oklch(100% 0 0); /* ~hsl(0 0% 100%) */
-  --color-card-foreground: oklch(29.6% 0.043 70.86); /* ~hsl(24 32% 15%) */
-  --color-popover: oklch(100% 0 0); /* ~hsl(0 0% 100%) */
-  --color-popover-foreground: oklch(29.6% 0.043 70.86); /* ~hsl(24 32% 15%) */
-  --color-border: oklch(91.58% 0.011 78.47); /* ~hsl(27 10% 92%) */
-  --color-input: oklch(91.58% 0.011 78.47); /* ~hsl(27 10% 92%) */
-  --color-ring: oklch(62.8% 0.277 21.1); /* ~hsl(21 100% 54%) */
+  /* PALETA UNIFICADA - SOLO ESTOS COLORES */
+  --color-primary: #2563eb; /* azul-600 */
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #64748b; /* slate-500 */
+  --color-secondary-foreground: #ffffff;
+  --color-accent: #10b981; /* emerald-500 */
+  --color-accent-foreground: #ffffff;
+  --color-success: #10b981; /* emerald-500 */
+  --color-warning: #f59e0b; /* amber-500 */
+  --color-destructive: #ef4444; /* red-500 */
+  
+  --color-background: #f8fafc; /* slate-50 */
+  --color-foreground: #0f172a; /* slate-900 */
+  --color-muted: #f1f5f9; /* slate-100 */
+  --color-muted-foreground: #64748b; /* slate-500 */
+  --color-card: #ffffff;
+  --color-card-foreground: #0f172a;
+  --color-border: #e2e8f0; /* slate-200 */
+  --color-input: #e2e8f0;
+  --color-ring: #2563eb;
 
-  /* Dark Mode Colors */
-  --color-primary.dark: oklch(68.06% 0.251 26.24); /* ~hsl(18 100% 60%) */
-  --color-primary-foreground.dark: oklch(21.58% 0.005 282.91); /* ~hsl(240 5.9% 10%) */
-  --color-secondary.dark: oklch(65.37% 0.193 259.66); /* ~hsl(217 71% 58%) */
-  --color-accent.dark: oklch(36.21% 0.035 264.17); /* ~hsl(215 27% 25%) */
-  --color-destructive.dark: oklch(46.02% 0.226 15.35); /* ~hsl(0 62.8% 30.6%) */
-  --color-background.dark: oklch(25.1% 0.032 267.27); /* ~hsl(222 47% 11%) */
-  --color-foreground.dark: oklch(98.04% 0 0); /* ~hsl(0 0% 98%) */
-  --color-card.dark: oklch(36.21% 0.035 264.17); /* ~hsl(215 27% 25%) */
-  --color-card-foreground.dark: oklch(98.04% 0 0);
-  --color-popover.dark: oklch(28.43% 0.045 261.57); /* ~hsl(217 32% 15%) */
-  --color-popover-foreground.dark: oklch(98.04% 0 0);
-  --color-muted.dark: oklch(36.21% 0.035 264.17); /* ~hsl(215 27% 25%) */
-  --color-muted-foreground.dark: oklch(67.03% 0.016 265.6); /* ~hsl(215 14% 65%) */
-  --color-border.dark: oklch(36.21% 0.035 264.17); /* ~hsl(215 27% 25%) */
-  --color-input.dark: oklch(36.21% 0.035 264.17); /* ~hsl(215 27% 25%) */
-  --color-ring.dark: oklch(98.04% 0 0); /* ~hsl(0 0% 98%) */
-
-  /* Brand Colors (Tailwind generará text-brand-orange, bg-brand-orange, etc.) */
-  --color-brand-orange: #FF6B35;
-  --color-brand-turquoise: #1ECBE1;
-  --color-brand-success: #4ED1A1;
-  --color-brand-warning: #FFB344;
-  --color-brand-error: #FF686B;
-  /* Para el borde específico de brand-warning que era diferente */
-  --color-brand-warning-border: #FF686B;
-
+  /* Dark Mode */
+  --color-primary.dark: #3b82f6;
+  --color-primary-foreground.dark: #ffffff;
+  --color-secondary.dark: #475569;
+  --color-accent.dark: #059669;
+  --color-destructive.dark: #dc2626;
+  --color-background.dark: #0f172a;
+  --color-foreground.dark: #f8fafc;
+  --color-card.dark: #1e293b;
+  --color-card-foreground.dark: #f8fafc;
+  --color-muted.dark: #1e293b;
+  --color-muted-foreground.dark: #94a3b8;
+  --color-border.dark: #334155;
+  --color-input.dark: #334155;
+  --color-ring.dark: #3b82f6;
 
   /* Fonts */
   --font-sans: 'Inter', sans-serif;
-  --font-heading: 'Clash Display', sans-serif;
-  --font-accent: 'Space Grotesk', monospace;
+  --font-heading: 'Inter', sans-serif;
 
   /* Spacing */
   --spacing-1_5: 6px;
@@ -90,11 +72,9 @@
   /* Shadows */
   --shadow-card-custom: 2px 3px 10px -2px rgba(0, 0, 0, 0.1);
   --shadow-elevated: 3px 4px 12px -1px rgba(0, 0, 0, 0.12);
-  /* Tailwind incluye shadow-xs, sm, md, lg, xl, 2xl por defecto. Si estos son adicionales, está bien. */
 
   /* Border Widths */
   --border-width-3: 3px;
-  /* Tailwind incluye border-width-0, 1(default), 2, 4, 8. Si 3 es específico, está bien. */
 
   /* Animations */
   --animate-fade-in-up: fade-in-up var(--duration-default) var(--ease-custom);
@@ -111,7 +91,6 @@
     transition-duration: var(--duration-default);
     transition-timing-function: var(--ease-custom);
   }
-
   h1, h2, h3, h4, h5, h6 {
      font-family: var(--font-heading);
   }
@@ -119,127 +98,127 @@
 
 @layer components {
   .btn-primary-custom {
-    @apply bg-primary text-primary-foreground shadow-xs relative overflow-hidden;
-    /* --shadow-xs debe ser una utilidad de Tailwind o definida en @theme */
-    /* Para el shadow-xs por defecto de Tailwind: shadow-xs */
-    transition-property: background-color, box-shadow, transform; /* Ser más específico */
+    @apply bg-blue-600 text-white shadow-sm relative overflow-hidden px-4 py-2 rounded-lg font-medium;
+    transition-property: background-color, box-shadow, transform;
     transition-duration: var(--duration-default);
     transition-timing-function: var(--ease-custom);
   }
-
   .btn-primary-custom:hover {
-    /* Para el hover, es mejor definir un color hover o usar utilidades de Tailwind */
-    /* Ej: @apply hover:bg-primary-hover; (definiendo --color-primary-hover en @theme) */
-    /* O un simple filter */
-    filter: brightness(1.1); /* Ajusta el brillo */
+    @apply bg-blue-700;
     box-shadow: var(--shadow-elevated);
   }
-
   .btn-primary-custom:active {
     transform: scale(0.98);
   }
 
-  .btn-primary-custom::after {
-    content: '';
-    @apply absolute bottom-0 left-0 w-full h-[2px] bg-secondary scale-x-0 origin-bottom-right;
-    transition: transform var(--duration-default) var(--ease-custom);
-  }
-
-  .btn-primary-custom:hover::after {
-    @apply scale-x-100 origin-bottom-left;
-  }
-
   .btn-outline-custom {
-    @apply border border-border bg-background text-foreground shadow-xs;
-    /* Para el shadow-xs por defecto de Tailwind: shadow-xs */
+    @apply border border-slate-200 bg-white text-slate-700 shadow-sm px-4 py-2 rounded-lg font-medium;
     transition-property: background-color, color, box-shadow;
     transition-duration: var(--duration-default);
     transition-timing-function: var(--ease-custom);
   }
   .btn-outline-custom:hover {
-    @apply bg-muted text-muted-foreground;
+    @apply bg-slate-50 text-slate-900 border-slate-300;
     box-shadow: var(--shadow-card-custom);
   }
 
+  .btn-success-custom {
+    @apply bg-emerald-500 text-white shadow-sm px-4 py-2 rounded-lg font-medium;
+    transition-property: background-color, box-shadow, transform;
+    transition-duration: var(--duration-default);
+    transition-timing-function: var(--ease-custom);
+  }
+  .btn-success-custom:hover {
+    @apply bg-emerald-600;
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .btn-warning-custom {
+    @apply bg-amber-500 text-white shadow-sm px-4 py-2 rounded-lg font-medium;
+    transition-property: background-color, box-shadow, transform;
+    transition-duration: var(--duration-default);
+    transition-timing-function: var(--ease-custom);
+  }
+  .btn-warning-custom:hover {
+    @apply bg-amber-600;
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .btn-danger-custom {
+    @apply bg-red-500 text-white shadow-sm px-4 py-2 rounded-lg font-medium;
+    transition-property: background-color, box-shadow, transform;
+    transition-duration: var(--duration-default);
+    transition-timing-function: var(--ease-custom);
+  }
+  .btn-danger-custom:hover {
+    @apply bg-red-600;
+    box-shadow: var(--shadow-elevated);
+  }
+
   .card-rounded-custom {
+    @apply bg-white rounded-xl border border-slate-200 p-6 shadow-sm;
     border-top-left-radius: var(--radius-xl);
     border-top-right-radius: var(--radius-xl);
     border-bottom-left-radius: var(--radius-md);
     border-bottom-right-radius: var(--radius-md);
+    transition: box-shadow var(--duration-default) var(--ease-custom);
   }
-
-  .card-pattern {
-    /* Este usa --color-background, que es un HSL. Para hsla, el canal alfa debe estar al final. */
-    /* Asumiendo que quieres una opacidad del 5%: */
-    background-image: repeating-linear-gradient(-45deg, hsla(var(--color-background), 0.05), hsla(var(--color-background), 0.05) 2px, transparent 2px, transparent 4px);
+  .card-rounded-custom:hover {
+    box-shadow: var(--shadow-elevated);
   }
 
   .card-border-top-primary {
     border-top-width: var(--border-width-3);
-    border-top-color: hsl(var(--color-primary));
-    @apply border-l border-r border-b border-border; /* Usa la variable de tema para el color de borde estándar */
+    @apply border-t-blue-600 border-l border-r border-b border-slate-200 bg-white rounded-lg p-6;
   }
 
   .input-underline-active {
-    @apply border-b-2 border-transparent;
+    @apply border-b-2 border-transparent bg-transparent px-3 py-2 rounded-lg;
     transition: border-bottom-color var(--duration-default) var(--ease-custom), box-shadow var(--duration-default) var(--ease-custom);
   }
-
   .input-underline-active:focus,
   .input-underline-active:active {
-    border-bottom-color: hsl(var(--color-primary));
+    @apply border-b-blue-600 outline-none;
     box-shadow: 0 1px 0 0 hsl(var(--color-primary));
   }
 
-  /* Override para el anillo de foco de shadcn/ui (último recurso) */
-  .input-underline-active.focus-visible:ring, /* Simplificado, asumiendo que .focus-visible:ring es un selector común */
-  .input-underline-active.focus-visible:ring-offset,
-  .input-underline-active.focus-visible:ring-opacity {
-      --tw-ring-color: transparent !important;
-      --tw-ring-offset-color: transparent !important;
-      --tw-ring-offset-width: 0px !important;
-      --tw-ring-opacity: 0 !important;
-      box-shadow: 0 1px 0 0 hsl(var(--color-primary)) !important;
-      border-color: hsl(var(--color-primary)) !important;
+  .tag-primary-custom {
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700;
   }
 
-  .checkbox-custom {
-    border-radius: 2px; /* Simplificado a un radio pequeño estándar */
-    @apply flex items-center justify-center;
+  .tag-success-custom {
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700;
   }
 
-  .radio-custom {
-    @apply appearance-none inline-block w-4 h-4 border-2 border-border rounded-full relative;
-    /* w-4 y h-4 son 1rem por defecto */
-    transition: border-color var(--duration-default) var(--ease-custom);
+  .tag-warning-custom {
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700;
   }
 
-  .radio-custom:checked {
-    border-color: hsl(var(--color-primary));
+  .tag-neutral-custom {
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700;
   }
 
-  .radio-custom:checked::before {
-    content: '';
-    @apply block w-2 h-2 bg-primary rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2;
-    /* w-2 y h-2 son 0.5rem por defecto */
+  .timer-display-custom {
+    @apply bg-white rounded-2xl border border-slate-200 p-8 text-center shadow-sm;
   }
 
-  .radio-custom:focus-visible {
-    @apply outline-none;
-    box-shadow: 0 0 0 3px hsl(var(--color-ring));
+  .timer-number-custom {
+    @apply text-4xl font-bold text-slate-900 font-mono;
   }
 
-  .navlink-subtle-active {
-    @apply opacity-100 scale-105; /* scale-105 es una utilidad común */
-    transition: opacity var(--duration-default) var(--ease-custom), transform var(--duration-default) var(--ease-custom);
+  .workout-card-custom {
+    @apply bg-white rounded-xl border-l-4 border-l-blue-600 border-r border-t border-b border-slate-200 p-6 shadow-sm;
+    transition: box-shadow var(--duration-default) var(--ease-custom);
   }
-}
+  .workout-card-custom:hover {
+    box-shadow: var(--shadow-elevated);
+  }
 
-/* @layer utilities ya no es necesario si las brand colors están en @theme */
-/* Tailwind generará .text-brand-orange, .bg-brand-orange, etc. */
-/* Si necesitas la .border-brand-warning específica con el color de error: */
-@layer utilities {
-  .border-brand-warning-specific {
-    border-color: hsl(var(--color-brand-warning-border));
+  .progress-bar-custom {
+    @apply w-full bg-slate-200 rounded-full h-2 overflow-hidden;
+  }
+
+  .progress-fill-custom {
+    @apply h-full bg-blue-600 rounded-full transition-all duration-300;
   }
 }

@@ -24,12 +24,12 @@ const Step4ReviewAndCreate: React.FC<Step4ReviewAndCreateProps> = ({
   // Ya tienes una buena lógica para cuando no hay nada que revisar
   if (finalGoalConfigurations.length === 0 && !isSubmitting && !error) { // Añadido !error para evitar mensaje de "nada que revisar" si hay un error previo
     return (
-      <Card className="text-center">
+      <Card className="text-center card-rounded-custom">
         <CardHeader>
           <CardTitle>Nada que Revisar</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">No has configurado ninguna meta. Por favor, vuelve a los pasos anteriores.</p>
+          <p className="text-slate-600">No has configurado ninguna meta. Por favor, vuelve a los pasos anteriores.</p>
         </CardContent>
       </Card>
     );
@@ -37,7 +37,7 @@ const Step4ReviewAndCreate: React.FC<Step4ReviewAndCreateProps> = ({
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="card-rounded-custom">
         <CardHeader>
           <CardTitle>4. Revisión Final y Creación de Metas</CardTitle>
           <CardDescription>
@@ -62,15 +62,15 @@ const Step4ReviewAndCreate: React.FC<Step4ReviewAndCreateProps> = ({
           <ScrollArea className="h-[350px] pr-3">
             <div className="space-y-3">
               {finalGoalConfigurations.map((goal, index) => (
-                <Card key={goal.id || `review-${index}`} className="bg-muted/20">
+                <Card key={goal.id || `review-${index}`} className="card-rounded-custom bg-muted/20">
                   <CardHeader className="pb-2 pt-3 px-4">
                     <CardTitle className="text-md flex items-center">
                       <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
                       {goal.exercise_name}
-                      {goal.is_custom && <span className="ml-2 text-xs font-normal text-blue-500">(Personalizado)</span>}
+                      {goal.is_custom && <span className="ml-2 text-xs font-normal text-blue-700">(Personalizado)</span>}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="text-xs px-4 pb-3 space-y-0.5 text-muted-foreground">
+                  <CardContent className="text-xs px-4 pb-3 space-y-0.5 text-slate-600">
                     <p><strong>Sets Semanales:</strong> {goal.sets || 'N/A'}</p>
                     <p><strong>Reps por Set:</strong> {goal.reps || 'N/A'}</p>
                     {/* Convertir a string para mostrar "N/A" si es null/undefined/'' */}

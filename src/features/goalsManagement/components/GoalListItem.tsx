@@ -32,11 +32,11 @@ const GoalListItem: React.FC<GoalListItemProps> = ({
 
   return (
     <TableRow className="hover:bg-muted/50">
-      <TableCell className="font-medium">{goal.exercise_name}</TableCell>
-      <TableCell className="text-center">{goal.sets}</TableCell>
-      <TableCell className="text-center">{goal.reps}</TableCell>
-      <TableCell className="text-center">{goal.weight !== null && goal.weight !== undefined ? `${goal.weight} kg` : '-'}</TableCell>
-      <TableCell className="text-center">{goal.duration_seconds !== null && goal.duration_seconds !== undefined ? `${goal.duration_seconds}s` : '-'}</TableCell>
+      <TableCell className="font-medium text-slate-900">{goal.exercise_name}</TableCell>
+      <TableCell className="text-center text-slate-600">{goal.sets}</TableCell>
+      <TableCell className="text-center text-slate-600">{goal.reps}</TableCell>
+      <TableCell className="text-center text-slate-600">{goal.weight !== null && goal.weight !== undefined ? `${goal.weight} kg` : '-'}</TableCell>
+      <TableCell className="text-center text-slate-600">{goal.duration_seconds !== null && goal.duration_seconds !== undefined ? `${goal.duration_seconds}s` : '-'}</TableCell>
       <TableCell>
         {goal.categories && goal.categories.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
@@ -44,7 +44,7 @@ const GoalListItem: React.FC<GoalListItemProps> = ({
               <Badge key={index} variant="secondary">{category}</Badge>
             ))}
             {goal.categories.length > 2 && (
-              <Badge variant="outline">+{goal.categories.length - 2}</Badge>
+              <Badge variant="secondary">+{goal.categories.length - 2}</Badge>
             )}
           </div>
         ) : (

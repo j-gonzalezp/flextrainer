@@ -105,14 +105,14 @@ const Step1CategoryEquipment: React.FC<Step1CategoryEquipmentProps> = ({
   if (isLoadingMetadata) {
     return (
       <div className="flex justify-center items-center h-48">
-        <p className="text-gray-600">Cargando opciones de entrenamiento...</p>
+        <p className="text-slate-600">Cargando opciones de entrenamiento...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex justify-center items-center h-48 text-red-600">
+      <div className="flex justify-center items-center h-48 text-red-700">
         <p>{error}</p>
       </div>
     );
@@ -140,7 +140,7 @@ const Step1CategoryEquipment: React.FC<Step1CategoryEquipmentProps> = ({
               </div>
             ))
           ) : (
-            <p className="col-span-full text-gray-500">No hay categorías generales disponibles en la librería de ejercicios. Asegúrate de que la librería contenga ejercicios.</p>
+            <p className="col-span-full text-slate-600">No hay categorías generales disponibles en la librería de ejercicios. Asegúrate de que la librería contenga ejercicios.</p>
           )}
         </CardContent>
       </Card>
@@ -194,7 +194,7 @@ const Step1CategoryEquipment: React.FC<Step1CategoryEquipmentProps> = ({
               </div>
             ))
           ) : (
-            <p className="col-span-full text-gray-500">No hay opciones de equipamiento disponibles en la librería de ejercicios. Asegúrate de que la librería contenga ejercicios.</p>
+            <p className="col-span-full text-slate-600">No hay opciones de equipamiento disponibles en la librería de ejercicios. Asegúrate de que la librería contenga ejercicios.</p>
           )}
         </CardContent>
       </Card>

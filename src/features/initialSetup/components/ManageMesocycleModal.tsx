@@ -344,7 +344,7 @@ const ManageMesocycleModal: React.FC<ManageMesocycleModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(openState) => !openState && handleCloseModal()}>
-      <DialogContent className="sm:max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-3xl max-h-[calc(100vh-4rem)] flex flex-col p-0">
+      <DialogContent className="sm:max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-3xl max-h-[calc(100vh-4rem)] flex flex-col p-0 card-rounded-custom">
         <DialogHeader className="p-4.5 pb-3.5 border-b">
           <DialogTitle className="text-xl">
             Crear Metas (Paso {currentStep} de 4)
@@ -356,7 +356,7 @@ const ManageMesocycleModal: React.FC<ManageMesocycleModalProps> = ({
 
         <div className="flex-grow overflow-y-auto p-4.5 space-y-4">
           {errorModal && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <div className="bg-red-50 border border-red-700 text-red-700 px-4 py-3 rounded relative" role="alert">
               <strong className="font-bold">¡Error!</strong>
               <span className="block sm:inline ml-2">{errorModal}</span>
             </div>
@@ -366,20 +366,21 @@ const ManageMesocycleModal: React.FC<ManageMesocycleModalProps> = ({
 
         <DialogFooter className="p-4.5 pt-3.5 border-t flex justify-between sm:justify-end gap-2">
           {currentStep > 1 && (
-            <Button type="button" variant="outline" onClick={handlePreviousStep} disabled={isSubmitting}>
+            <Button type="button" variant="outline" onClick={handlePreviousStep} disabled={isSubmitting} className="btn-outline-custom">
               Anterior
             </Button>
           )}
           {currentStep < 4 && (
-            <Button 
-              type="button" 
-              onClick={handleNextStep} 
+            <Button
+              type="button"
+              onClick={handleNextStep}
               disabled={
-                isSubmitting || 
+                isSubmitting ||
                 (currentStep === 1 && selectedGeneralCategories.length === 0 && selectedEquipment.length === 0) ||
-                (currentStep === 2 && (chosenExercises.length === 0 || chosenExercises.some(ex => ex.is_custom && ex.categories_general.length === 0))) || 
+                (currentStep === 2 && (chosenExercises.length === 0 || chosenExercises.some(ex => ex.is_custom && ex.categories_general.length === 0))) ||
                 (currentStep === 3 && !areAllChosenExercisesConfigured())
               }
+              className="btn-primary-custom"
             >
               Siguiente
             </Button>

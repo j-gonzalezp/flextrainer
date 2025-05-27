@@ -76,13 +76,13 @@ const CurrentExerciseDisplay: React.FC<CurrentExerciseDisplayProps> = ({
   const totalPlannedSets = goal?.performance?.totalPlannedSets ?? goal?.sets ?? 0;
 
   return (
-    <Card className="shadow-lg border-accent/30 flex flex-col min-h-[180px]">
+    <Card className="card-rounded-custom flex flex-col min-h-[180px]">
       <div className="flex-grow flex flex-col">
         <CardHeader className="pb-3">
           <div className="flex justify-between items-start gap-4">
             <div className="flex-grow">
               <div className="flex items-center justify-between gap-2">
-                <CardTitle className="text-3xl font-bold tracking-tight">
+                <CardTitle className="text-3xl font-bold tracking-tight text-slate-900">
                   {goal.exercise_name || 'Ejercicio sin nombre'}
                 </CardTitle>
                 <div className="flex flex-col gap-1">
@@ -92,17 +92,17 @@ const CurrentExerciseDisplay: React.FC<CurrentExerciseDisplayProps> = ({
                     onClick={onChangeExerciseClick}
                     aria-label="Cambiar ejercicio actual"
                     disabled={isProcessingChange || isPausing}
-                    className="text-muted-foreground hover:bg-accent/10 w-24 justify-center"
+                    className="text-slate-600 hover:bg-accent/10 w-24 justify-center"
                   >
                     <Replace className="h-4 w-4" />
                     <span className="ml-1.5">Cambiar</span>
                   </Button>
                 </div>
               </div>
-              <CardDescription className="text-base text-muted-foreground mt-2">
+              <CardDescription className="text-base text-slate-600 mt-2">
                 <span className="font-medium">Objetivo (serie actual):</span> {formatObjective()}
               </CardDescription>
-              <CardDescription className="text-base text-muted-foreground mt-1">
+              <CardDescription className="text-base text-slate-600 mt-1">
                 <span className="font-medium">Progreso:</span> {completedSets} / {totalPlannedSets} series completadas
               </CardDescription>
             </div>
@@ -113,7 +113,7 @@ const CurrentExerciseDisplay: React.FC<CurrentExerciseDisplayProps> = ({
           <div className="flex flex-col h-full">
             {goal.notes && (
               <div className="mb-3">
-                <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-1.5">
+                <h4 className="text-xs font-semibold uppercase text-slate-600 tracking-wider mb-1.5">
                   Notas:
                 </h4>
                 <p className="text-sm text-foreground whitespace-pre-wrap bg-muted/30 p-3 rounded-md">
@@ -127,7 +127,7 @@ const CurrentExerciseDisplay: React.FC<CurrentExerciseDisplayProps> = ({
              goal.duration_seconds > 0 &&
              typeof effectiveInitialDuration === 'number' && ( // Check for number type
                 <div className="mt-3">
-                  <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-1.5">
+                  <h4 className="text-xs font-semibold uppercase text-slate-600 tracking-wider mb-1.5">
                     Temporizador:
                   </h4>
                   <ExerciseTimer
@@ -146,14 +146,14 @@ const CurrentExerciseDisplay: React.FC<CurrentExerciseDisplayProps> = ({
             <div className={goal.notes ? 'mt-auto' : ''}>
               {goal.categories && goal.categories.length > 0 ? (
                 <div>
-                  <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-1.5">
+                  <h4 className="text-xs font-semibold uppercase text-slate-600 tracking-wider mb-1.5">
                     Categorías:
                   </h4>
                   <div className="flex flex-wrap gap-1.5">
                     {goal.categories.map((category, index) => (
                       <span
                         key={index}
-                        className="px-2.5 py-0.5 text-xs bg-secondary text-secondary-foreground rounded-full font-medium"
+                        className="tag-neutral-custom"
                       >
                         {category}
                       </span>

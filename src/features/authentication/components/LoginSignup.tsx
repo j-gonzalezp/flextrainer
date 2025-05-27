@@ -83,14 +83,14 @@ const LoginSignup: React.FC = () => {
 
   if (user) {
     return (
-      <Card className="w-full max-w-md mx-auto">
+      <Card className="w-full max-w-md mx-auto card-rounded-custom">
         <CardHeader>
           <CardTitle>Bienvenido</CardTitle>
           <CardDescription>{user.email}</CardDescription>
         </CardHeader>
         <CardContent>
           {successMessage && (
-            <Alert variant="default" className="mb-4 bg-green-50 border-green-300 text-green-700 dark:bg-green-900/30 dark:border-green-700 dark:text-green-400">
+            <Alert variant="success" className="mb-4">
               <AlertTitle>Éxito</AlertTitle>
               <AlertDescription>{successMessage}</AlertDescription>
             </Alert>
@@ -98,7 +98,7 @@ const LoginSignup: React.FC = () => {
           <p>Ya has iniciado sesión.</p>
         </CardContent>
         <CardFooter>
-          <Button onClick={handleSignOut} disabled={isSubmitting} className="w-full border">
+          <Button onClick={handleSignOut} disabled={isSubmitting} className="w-full btn-outline-custom">
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Cerrar Sesión
           </Button>
@@ -127,7 +127,7 @@ const LoginSignup: React.FC = () => {
               </Alert>
             )}
             {successMessage && (
-              <Alert variant="default" className="bg-green-50 border-green-300 text-green-700 dark:bg-green-900/30 dark:border-green-700 dark:text-green-400">
+              <Alert variant="success">
                 <AlertTitle>Información</AlertTitle>
                 <AlertDescription>{successMessage}</AlertDescription>
               </Alert>
@@ -156,7 +156,7 @@ const LoginSignup: React.FC = () => {
             </div>
           </CardContent>
           <CardFooter>
-            <Button onClick={() => handleSubmit('login')} disabled={isSubmitting} className="w-full border">
+            <Button onClick={() => handleSubmit('login')} disabled={isSubmitting} className="w-full btn-primary-custom">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Iniciar Sesión
             </Button>
@@ -200,7 +200,7 @@ const LoginSignup: React.FC = () => {
             </div>
           </CardContent>
           <CardFooter>
-            <Button onClick={() => handleSubmit('signup')} disabled={isSubmitting} className="w-full border">
+            <Button onClick={() => handleSubmit('signup')} disabled={isSubmitting} className="w-full btn-primary-custom">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Registrarse
             </Button>

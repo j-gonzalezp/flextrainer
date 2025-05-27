@@ -79,7 +79,7 @@ const ChangeExerciseModal: React.FC<ChangeExerciseModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(openState) => !openState && onClose()}>
-      <DialogContent className="sm:max-w-lg max-h-[calc(100vh-4rem)] flex flex-col p-0 animate-fade-in-up">
+      <DialogContent className="sm:max-w-lg max-h-[calc(100vh-4rem)] flex flex-col p-0 animate-fade-in-up card-rounded-custom">
         <DialogHeader className="p-4.5 pb-3.5 border-b">
           <DialogTitle className="text-xl">
             Seleccionar Ejercicio del Microciclo {selectedMicrocycle ?? ''}
@@ -116,7 +116,7 @@ const ChangeExerciseModal: React.FC<ChangeExerciseModalProps> = ({
 
         <div className="flex-grow overflow-hidden px-4.5">
           {isLoading ? ( /* ... */ <div className="flex justify-center items-center h-full"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>)
-           : error ? ( /* ... */ <div className="flex flex-col justify-center items-center h-full text-center px-4"><p className="text-destructive">{error}</p><Button variant="outline" onClick={onClose} className="mt-4 border-muted-foreground/30 text-foreground hover:bg-muted/50 hover:border-primary/50 transition-colors">Cerrar</Button></div>)
+           : error ? ( /* ... */ <div className="flex flex-col justify-center items-center h-full text-center px-4"><p className="text-red-700">{error}</p><Button variant="outline" onClick={onClose} className="btn-outline-custom">Cerrar</Button></div>)
            : (
             <ScrollArea className="h-full pr-2 -mr-2">
               {filteredExercises.length > 0 ? (
@@ -129,9 +129,9 @@ const ChangeExerciseModal: React.FC<ChangeExerciseModalProps> = ({
                       onClick={() => { onExerciseSelected(goal); }}
                     >
                       <div>
-                        <p className="font-medium text-sm leading-snug">{goal.exercise_name}</p> 
+                        <p className="font-medium text-sm leading-snug text-slate-900">{goal.exercise_name}</p> 
                         {goal.categories && goal.categories.length > 0 && (
-                          <p className="text-xs text-muted-foreground mt-0.5">
+                          <p className="text-xs text-slate-600 mt-0.5">
                             {goal.categories.join(' / ')}
                           </p>
                         )}
@@ -141,7 +141,7 @@ const ChangeExerciseModal: React.FC<ChangeExerciseModalProps> = ({
                 </div>
               ) : (
                 <div className="flex justify-center items-center h-full">
-                    <p className="text-sm text-muted-foreground text-center py-10 px-4">
+                    <p className="text-sm text-slate-600 text-center py-10 px-4">
                     No hay ejercicios (metas) que coincidan para este microciclo y filtros.
                     </p>
                 </div>
@@ -152,7 +152,7 @@ const ChangeExerciseModal: React.FC<ChangeExerciseModalProps> = ({
         
         <DialogFooter className="p-4.5 pt-3.5 border-t">
           <DialogClose asChild> 
-            <Button variant="outline" className="border-muted-foreground/30 text-foreground hover:bg-muted/50 hover:border-primary/50 transition-colors">Cancelar</Button>
+            <Button variant="outline" className="btn-outline-custom">Cancelar</Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

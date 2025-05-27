@@ -84,16 +84,16 @@ const ExerciseParameterConfigItem: React.FC<ExerciseParameterConfigItemProps> = 
     <AccordionItem value={itemKey} key={itemKey}>
       <AccordionTrigger className="hover:no-underline">
         <div className="flex flex-col text-left">
-          <span className="font-semibold">{exerciseConfig.exercise_name}</span>
-          {exerciseConfig.is_custom && <span className="text-xs text-blue-500 font-medium">(Personalizado)</span>}
+          <span className="font-semibold text-slate-900">{exerciseConfig.exercise_name}</span>
+          {exerciseConfig.is_custom && <span className="text-xs text-blue-700 font-medium">(Personalizado)</span>}
           {(exerciseConfig.categories_general.length > 0 || exerciseConfig.categories_specific.length > 0) ? (
-            <span className="text-xs text-muted-foreground mt-0.5">
+            <span className="text-xs text-slate-600 mt-0.5">
               Categorías: 
               {exerciseConfig.categories_general.join(', ')}
               {exerciseConfig.categories_specific.length > 0 && ` (${exerciseConfig.categories_specific.join(', ')})`}
             </span>
           ) : (
-            exerciseConfig.is_custom && <span className="text-xs text-red-500 font-medium mt-0.5">¡Sin categoría!</span>
+            exerciseConfig.is_custom && <span className="text-xs text-red-700 font-medium mt-0.5">¡Sin categoría!</span>
           )}
         </div>
       </AccordionTrigger>
@@ -176,7 +176,7 @@ const MuscleGroupVolumeConfig: React.FC<MuscleGroupVolumeConfigProps> = ({
   onUpdateMuscleGroupVolume,
 }) => {
   return (
-    <Card>
+    <Card className="card-rounded-custom">
       <CardHeader>
         <CardTitle>1. Volumen Total por Grupo Muscular</CardTitle>
         <CardDescription>Define la cantidad total de sets semanales que deseas para cada grupo muscular principal de tus ejercicios elegidos. Solo se mostrarán los grupos musculares relevantes para tus ejercicios de fuerza seleccionados.</CardDescription>
@@ -185,7 +185,7 @@ const MuscleGroupVolumeConfig: React.FC<MuscleGroupVolumeConfigProps> = ({
         {muscleGroups.length > 0 ? (
           muscleGroups.map(group => (
             <div key={group} className="flex items-center space-x-4">
-              <Label htmlFor={`volume-${group}`} className="flex-grow font-medium">Volumen para {group}:</Label>
+              <Label htmlFor={`volume-${group}`} className="flex-grow font-medium text-slate-900">Volumen para {group}:</Label>
               <Input
                 id={`volume-${group}`}
                 type="number"
@@ -194,11 +194,11 @@ const MuscleGroupVolumeConfig: React.FC<MuscleGroupVolumeConfigProps> = ({
                 onChange={e => onUpdateMuscleGroupVolume(group, parseInt(e.target.value) || 0)}
                 className="w-24"
               />
-              <span className="text-sm text-muted-foreground">sets semanales</span>
+              <span className="text-sm text-slate-600">sets semanales</span>
             </div>
           ))
         ) : (
-          <p className="text-muted-foreground">No hay grupos musculares de fuerza en los ejercicios elegidos para configurar volumen.</p>
+          <p className="text-slate-600">No hay grupos musculares de fuerza en los ejercicios elegidos para configurar volumen.</p>
         )}
       </CardContent>
     </Card>
@@ -342,7 +342,7 @@ const Step3ParameterConfig: React.FC<Step3ParameterConfigProps> = ({
 
 
   if (exercisesToConfigure.length === 0) {
-    return <p className="text-center text-muted-foreground py-10">No has elegido ningún ejercicio. Vuelve al paso anterior para seleccionar algunos.</p>;
+    return <p className="text-center text-slate-600 py-10">No has elegido ningún ejercicio. Vuelve al paso anterior para seleccionar algunos.</p>;
   }
 
   return (
@@ -353,7 +353,7 @@ const Step3ParameterConfig: React.FC<Step3ParameterConfigProps> = ({
         onUpdateMuscleGroupVolume={handleUpdateMuscleGroupVolume}
       />
 
-      <Card>
+      <Card className="card-rounded-custom">
         <CardHeader>
           <CardTitle>2. Configurar Parámetros de Metas Individuales</CardTitle>
           <CardDescription>Define los objetivos específicos para cada ejercicio elegido. Los campos con * son recomendados.</CardDescription>

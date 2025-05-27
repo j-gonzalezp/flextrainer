@@ -99,7 +99,7 @@ const NextMicrocycleWizard: React.FC<NextMicrocycleWizardProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[700px] h-[90vh] flex flex-col">
+      <DialogContent className="sm:max-w-[700px] h-[90vh] flex flex-col card-rounded-custom">
         <DialogHeader>
           <DialogTitle>Habilitar Microciclo {nextMicrocycleNumber}</DialogTitle>
           <DialogDescription>
@@ -116,9 +116,9 @@ const NextMicrocycleWizard: React.FC<NextMicrocycleWizardProps> = ({
             <div className="h-full overflow-y-auto pr-2">
               <div className="space-y-4">
                 {editableGoals.map((goal, index) => (
-                  <div key={goal.originalGoalId || index} className="border p-4 rounded-md space-y-3">
+                  <div key={goal.originalGoalId || index} className="card-rounded-custom space-y-3">
                     <div className="flex items-center justify-between">
-                      <h4 className="text-lg font-semibold">{goal.exercise_name}</h4>
+                      <h4 className="text-lg font-semibold text-slate-900">{goal.exercise_name}</h4>
                       <div className="flex items-center space-x-2">
                         <Checkbox
                           checked={goal.includeInNextMicrocycle}
@@ -132,7 +132,7 @@ const NextMicrocycleWizard: React.FC<NextMicrocycleWizardProps> = ({
                     <Separator />
                     
                     {goal.performance ? (
-                      <div className="text-sm text-muted-foreground space-y-2">
+                      <div className="text-sm text-slate-600 space-y-2">
                         <p className="font-medium">Rendimiento anterior (Microciclo {currentMicrocycleNumber}):</p>
                         <div className="grid grid-cols-2 gap-4 text-xs">
                           <p>Planificado: {goal.performance.totalPlannedSets} sets, {goal.performance.totalPlannedReps} reps</p>
@@ -144,11 +144,11 @@ const NextMicrocycleWizard: React.FC<NextMicrocycleWizardProps> = ({
                           <div className="flex items-center col-span-2">
                             Meta Anterior:
                             {goal.performance.wasCompleted ? (
-                              <Badge variant="secondary" className="ml-2 bg-green-500 text-white">
+                              <Badge variant="success" className="ml-2">
                                 <CheckCircle className="mr-1 h-3 w-3" /> Cumplida
                               </Badge>
                             ) : (
-                              <Badge variant="secondary" className="ml-2 bg-red-500 text-white">
+                              <Badge variant="destructive" className="ml-2">
                                 <XCircle className="mr-1 h-3 w-3" /> No cumplida
                               </Badge>
                             )}
@@ -156,7 +156,7 @@ const NextMicrocycleWizard: React.FC<NextMicrocycleWizardProps> = ({
                         </div>
                       </div>
                     ) : (
-                      <div className="text-sm text-muted-foreground py-2">
+                      <div className="text-sm text-slate-600 py-2">
                         <p>No hay datos de rendimiento para esta meta en el microciclo anterior.</p>
                       </div>
                     )}
@@ -215,10 +215,10 @@ const NextMicrocycleWizard: React.FC<NextMicrocycleWizardProps> = ({
         </div>
         
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isLoading}>
+          <Button variant="outline" onClick={onClose} disabled={isLoading} className="btn-outline-custom">
             Cancelar
           </Button>
-          <Button onClick={handleConfirm} disabled={isLoading || editableGoals.filter(g => g.includeInNextMicrocycle).length === 0}>
+          <Button onClick={handleConfirm} disabled={isLoading || editableGoals.filter(g => g.includeInNextMicrocycle).length === 0} className="btn-primary-custom">
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Habilitar Microciclo {nextMicrocycleNumber}
           </Button>
