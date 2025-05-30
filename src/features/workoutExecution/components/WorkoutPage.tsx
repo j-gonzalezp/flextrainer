@@ -354,7 +354,7 @@ const WorkoutPage: React.FC = () => {
                       )}
                     </div>
                     <div className="flex justify-end pt-2 border-t mt-4">
-                        <Button size="sm" onClick={() => setIsCategoryModalOpen(false)}>Hecho</Button>
+                        <Button size="sm" className='bg-accent text-accent-foreground hover:bg-accent/90' onClick={() => setIsCategoryModalOpen(false)}>Hecho</Button>
                     </div>
                   </DialogContent>
                 </Dialog>

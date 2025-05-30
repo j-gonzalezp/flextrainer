@@ -204,7 +204,7 @@ const PerformanceLogger: React.FC<PerformanceLoggerProps> = ({
               (goal?.reps !== undefined && goal?.reps !== null && !performanceReps) ||
               (goal?.duration_seconds !== undefined && goal?.duration_seconds !== null && !performanceDuration)
             }
-            className="btn-primary-custom"
+            className="bg-accent text-accent-foreground hover:bg-accent/90"
           >
             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             Registrar Set
