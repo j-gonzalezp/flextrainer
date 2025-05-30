@@ -316,7 +316,7 @@ const WorkoutPage: React.FC = () => {
                         Selecciona una o más categorías. Se mostrarán ejercicios que pertenezcan a CUALQUIERA de las categorías elegidas.
                         Si no seleccionas ninguna, se mostrarán todos los ejercicios activos del microciclo.
                       </p>
-                      <div className="flex flex-wrap gap-2 max-h-[200px] overflow-y-auto p-1 rounded-md border">
+                      <div className="flex flex-wrap gap-2 max-h-[200px] overflow-y-auto p-1 ">
                         {availableCategories.map((category: string) => {
                           const isSelected = selectedCategoryFilters.includes(category);
                           return (
@@ -387,7 +387,7 @@ const WorkoutPage: React.FC = () => {
                         Selecciona uno o más tipos de equipamiento. Se mostrarán ejercicios que requieran CUALQUIERA del equipamiento elegido.
                         Si no seleccionas ninguno, se mostrarán todos los ejercicios activos del microciclo.
                       </p>
-                      <div className="flex flex-wrap gap-2 max-h-[200px] overflow-y-auto p-1 rounded-md border">
+                      <div className="flex flex-wrap gap-2 max-h-[200px] overflow-y-auto p-1 ">
                         {availableEquipment.map((equipment: string) => {
                           const isSelected = selectedEquipmentFilters.includes(equipment);
                           return (
@@ -429,7 +429,7 @@ const WorkoutPage: React.FC = () => {
                       )}
                     </div>
                     <div className="flex justify-end pt-2 border-t mt-4">
-                        <Button size="sm" onClick={() => setIsEquipmentModalOpen(false)}>Hecho</Button>
+                        <Button size="sm"  className='bg-accent text-accent-foreground hover:bg-accent/90' onClick={() => setIsEquipmentModalOpen(false)}>Hecho</Button>
                     </div>
                   </DialogContent>
                 </Dialog>

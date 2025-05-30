@@ -316,7 +316,7 @@ const GoalsManagementPage: React.FC = () => {
             handleSelectMicrocycle(microcycleNumber.toString());
           }}
           hookHandleAddGoal={handleAddGoal}
-          targetMicrocycleNumber={1}
+          targetMicrocycleNumber={microcycles.length > 0 ? microcycles[microcycles.length - 1] : 1}
         />
       )}
       {isNextMicrocycleWizardOpen && selectedMicrocycle !== null && (
