@@ -33,35 +33,37 @@ const RestTimerControl: React.FC<RestTimerControlProps> = ({
 
   // Initialize audio
   useEffect(() => {
-    // Create audio with a beep sound data URL
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const createBeepSound = () => {
-      const duration = 0.5;
-      const sampleRate = audioContext.sampleRate;
-      const numSamples = duration * sampleRate;
-      const buffer = audioContext.createBuffer(1, numSamples, sampleRate);
-      const data = buffer.getChannelData(0);
-      
-      for (let i = 0; i < numSamples; i++) {
-        const t = i / sampleRate;
-        // Create a beep sound with frequency modulation
-        data[i] = Math.sin(2 * Math.PI * 800 * t) * Math.exp(-t * 3) * 0.3;
-      }
-      
-      return buffer;
-    };
+    // Only create AudioContext if window is defined (client-side)
+    if (typeof window !== 'undefined') {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const createBeepSound = () => {
+        const duration = 0.5;
+        const sampleRate = audioContext.sampleRate;
+        const numSamples = duration * sampleRate;
+        const buffer = audioContext.createBuffer(1, numSamples, sampleRate);
+        const data = buffer.getChannelData(0);
+        
+        for (let i = 0; i < numSamples; i++) {
+          const t = i / sampleRate;
+          data[i] = Math.sin(2 * Math.PI * 800 * t) * Math.exp(-t * 3) * 0.3;
+        }
+        
+        return buffer;
+      };
 
-    const playBeep = () => {
-      if (audioContext.state === 'suspended') {
-        audioContext.resume();
-      }
-      const source = audioContext.createBufferSource();
-      source.buffer = createBeepSound();
-      source.connect(audioContext.destination);
-      source.start();
-    };
+      const playBeep = async () => {
+        if (audioContext.state === 'suspended') {
+          await audioContext.resume(); // Resume context on user interaction
+        }
+        const source = audioContext.createBufferSource();
+        source.buffer = createBeepSound();
+        source.connect(audioContext.destination);
+        source.start();
+      };
 
-    audioRef.current = { play: playBeep } as any;
+      // Assign the play function to the ref
+      audioRef.current = { play: playBeep } as any; 
+    }
   }, []);
 
   // Check if timer reached zero to play sound
@@ -69,9 +71,13 @@ const RestTimerControl: React.FC<RestTimerControlProps> = ({
     if (previousSecondsRef.current > 0 && restTimerSeconds === 0 && isRestTimerRunning) {
       // Timer just reached zero, play sound
       if (audioRef.current) {
-        audioRef.current.play().catch(() => {
-          // Fallback if audio fails - could add a visual notification here
-          console.log('Timer finished!');
+        audioRef.current.play().catch((e: DOMException) => {
+          // Handle play() failed promise (e.g., user gesture required)
+          if (e.name === 'NotAllowedError') {
+            console.warn('Autoplay prevented. Please interact with the page to enable sound.');
+          } else {
+            console.error('Error playing sound:', e);
+          }
         });
       }
     }
@@ -90,103 +96,77 @@ const RestTimerControl: React.FC<RestTimerControlProps> = ({
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>, type: 'minutes' | 'seconds') => {
     const value = event.target.value.replace(/\D/g, ''); // Only allow digits
-    console.log(`🔍 Input change - Type: ${type}, Value: "${value}", Length: ${value.length}`);
     
     if (type === 'minutes') {
       if (value.length <= 2) {
-        console.log(`✅ Setting minutes to: "${value}"`);
         setInputMinutes(value);
-      } else {
-        console.log(`❌ Minutes too long: ${value.length} chars`);
       }
     } else {
       if (value.length <= 2 && parseInt(value || '0') < 60) {
-        console.log(`✅ Setting seconds to: "${value}"`);
         setInputSeconds(value);
-      } else {
-        console.log(`❌ Seconds invalid: "${value}" (length: ${value.length}, parsed: ${parseInt(value || '0')})`);
       }
     }
   };
 
   const handleInputBlur = () => {
-    console.log('👁️ Blur event triggered');
-    // Only finish editing if focus is leaving the entire timer component
+    // Small delay to let focus settle on other elements within the component
     setTimeout(() => {
       const activeElement = document.activeElement;
-      const isStillInTimer = activeElement?.id === 'minutes-input' || activeElement?.id === 'seconds-input';
-      console.log(`🔍 Focus check - Active element: ${activeElement?.id}, Still in timer: ${isStillInTimer}`);
-      
-      if (!isStillInTimer) {
-        console.log('✅ Focus left timer - finishing edit');
+      // Check if focus is still within one of the inputs or the main timer div
+      const isStillInTimerInputs = (activeElement?.id === 'minutes-input' || activeElement?.id === 'seconds-input');
+      const timerContainer = document.querySelector('.compact-rest-timer-container'); // Add a class to the main container
+      const isStillInTimerComponent = timerContainer && timerContainer.contains(activeElement);
+
+      if (!isStillInTimerInputs && !isStillInTimerComponent) {
         finishEditing();
-      } else {
-        console.log('🚫 Still in timer - not finishing edit');
       }
-    }, 10); // Small delay to let focus settle
+    }, 50); 
   };
 
   const handleInputKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
     const target = event.target as HTMLInputElement;
-    console.log(`⌨️  Key pressed: "${event.key}" on field: ${target.id}`);
-    console.log(`📍 Current state - Minutes: "${inputMinutes}", Seconds: "${inputSeconds}"`);
     
     if (event.key === 'Enter') {
-      console.log('🚀 Enter pressed - finishing edit');
       finishEditing();
     } else if (event.key === 'Escape') {
-      console.log('🚫 Escape pressed - canceling edit');
       setIsEditing(false);
       setInputMinutes('');
       setInputSeconds('');
     } else if (event.key === 'Tab') {
-      console.log('↹ Tab pressed - allowing natural navigation');
+      // Allow default tab behavior
       return;
     } else if (event.key === ':' || event.key === ' ') {
-      console.log('🎯 Colon/Space pressed - trying to jump to seconds');
-      event.preventDefault();
+      event.preventDefault(); // Prevent colon/space from being typed
       const secondsInput = target.parentElement?.querySelector('#seconds-input') as HTMLInputElement;
-      if (secondsInput && target !== secondsInput) {
-        console.log('✅ Jumping to seconds field');
+      if (secondsInput && target.id !== 'seconds-input') {
         secondsInput.focus();
         secondsInput.select();
-      } else {
-        console.log('❌ Could not find seconds input or already on it');
       }
     } else if (target.id === 'minutes-input' && inputMinutes.length === 2 && /\d/.test(event.key)) {
-      console.log(`🔄 Auto-jump trigger: minutes="${inputMinutes}" (length: ${inputMinutes.length}), key="${event.key}"`);
-      event.preventDefault();
+      // Auto-jump to seconds after 2 digits in minutes
+      event.preventDefault(); // Prevent the 3rd digit from being typed in minutes
       const secondsInput = target.parentElement?.querySelector('#seconds-input') as HTMLInputElement;
       if (secondsInput) {
-        console.log('✅ Auto-jumping to seconds and setting value');
         secondsInput.focus();
-        setInputSeconds(event.key);
-      } else {
-        console.log('❌ Could not find seconds input for auto-jump');
+        setInputSeconds(event.key); // Set the pressed key as the first digit for seconds
       }
-    } else {
-      console.log(`ℹ️  Regular key: "${event.key}" - no special handling`);
     }
   };
 
   const finishEditing = () => {
-    console.log(`💾 Finishing edit - Minutes: "${inputMinutes}", Seconds: "${inputSeconds}"`);
     const minutes = parseInt(inputMinutes || '0', 10);
     const seconds = parseInt(inputSeconds || '0', 10);
-    console.log(`🔢 Parsed - Minutes: ${minutes}, Seconds: ${seconds}`);
     
     if (!isNaN(minutes) && !isNaN(seconds) && minutes >= 0 && seconds >= 0 && seconds < 60) {
       const totalSeconds = minutes * 60 + seconds;
-      console.log(`✅ Valid input - Total seconds: ${totalSeconds}`);
       setRestTimerSeconds(totalSeconds || 30); // Default to 30 if total is 0
-      resetRestTimer(totalSeconds || 30);
+      resetRestTimer(totalSeconds || 30); // Also reset to the new duration
     } else if (inputMinutes === '' && inputSeconds === '') {
-      console.log('🔄 Empty inputs - setting to default 30 seconds');
+      // If both are empty, reset to default 30 seconds
       setRestTimerSeconds(30);
       resetRestTimer(30);
-    } else {
-      console.log('❌ Invalid input - not saving');
-    }
+    } 
+    // If input was invalid but not empty, just revert to current value
     setIsEditing(false);
     setInputMinutes('');
     setInputSeconds('');
@@ -197,12 +177,14 @@ const RestTimerControl: React.FC<RestTimerControlProps> = ({
   };
 
   return (
-    <div className="timer-display-custom">
-      <div className="flex flex-col items-center space-y-2">
-        <Label className="text-sm font-medium text-slate-600">Rest Timer</Label>
+    // Main container now uses flex-row for a single line
+    <div className="compact-rest-timer-container flex items-center space-x-4">
+      {/* Label and Timer/Input Group */}
+      <div className="flex items-center space-x-2">
+        <Label className="text-sm font-medium text-slate-600 min-w-[70px]">Rest Timer:</Label>
         
         {isEditing ? (
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center space-x-0.5">
             <input
               id="minutes-input"
               type="text"
@@ -210,12 +192,12 @@ const RestTimerControl: React.FC<RestTimerControlProps> = ({
               onChange={(e) => handleInputChange(e, 'minutes')}
               onBlur={handleInputBlur}
               onKeyDown={handleInputKeyPress}
-              className="w-12 text-center text-4xl font-mono bg-transparent border-none outline-none focus:bg-blue-50 rounded px-1"
-              placeholder="0"
+              className="w-10 text-center text-2xl font-mono bg-transparent border-none outline-none focus:bg-blue-50 rounded px-0.5 py-0.5"
+              placeholder="00"
               maxLength={2}
               autoFocus
             />
-            <span className="text-4xl font-mono text-slate-600">:</span>
+            <span className="text-2xl font-mono text-slate-600">:</span>
             <input
               id="seconds-input"
               type="text"
@@ -223,38 +205,36 @@ const RestTimerControl: React.FC<RestTimerControlProps> = ({
               onChange={(e) => handleInputChange(e, 'seconds')}
               onBlur={handleInputBlur}
               onKeyDown={handleInputKeyPress}
-              className="w-12 text-center text-4xl font-mono bg-transparent border-none outline-none focus:bg-blue-50 rounded px-1"
+              className="w-10 text-center text-2xl font-mono bg-transparent border-none outline-none focus:bg-blue-50 rounded px-0.5 py-0.5"
               placeholder="30"
               maxLength={2}
             />
           </div>
         ) : (
           <div 
-            className={`timer-number-custom cursor-pointer px-4 py-2 rounded transition-colors ${
+            className={`timer-number-custom font-semibold text-2xl font-mono px-2 py-1 rounded transition-colors flex items-center gap-1 ${
               !isRestTimerRunning 
-                ? 'hover:bg-gray-100 text-blue-700' 
+                ? 'cursor-pointer hover:bg-gray-100 text-blue-700' 
                 : 'text-gray-800'
-            } ${restTimerSeconds === 0 ? 'text-red-700 font-bold' : ''}`}
+            } ${restTimerSeconds === 0 ? 'text-red-700 font-bold animate-pulse' : ''}`}
             onClick={handleTimeClick}
             title={!isRestTimerRunning ? "Click to edit time" : ""}
           >
             {formatTime(restTimerSeconds)}
+            {restTimerSeconds === 0 && <span className="text-xl">🔔</span>} {/* Small bell icon */}
           </div>
-        )}
-        
-        {!isEditing && !isRestTimerRunning && (
-          <p className="text-xs text-slate-600">Click to edit • Tab/: to switch • Enter to save</p>
         )}
       </div>
 
+      {/* Buttons */}
       <div className="flex space-x-2">
         <Button 
           onClick={isRestTimerRunning ? pauseRestTimer : startRestTimer}
           disabled={isEditing}
-          className={`px-6 ${
+          className={`px-4 py-2 text-sm ${
             isRestTimerRunning 
               ? 'btn-warning-custom' 
-              : 'btn-primary-custom'
+              : 'bg-accent text-accent-foreground hover:bg-accent/90'
           }`}
         >
           {isRestTimerRunning ? 'Pause' : 'Start'}
@@ -264,17 +244,11 @@ const RestTimerControl: React.FC<RestTimerControlProps> = ({
           variant="outline" 
           onClick={handleReset}
           disabled={isEditing}
-          className="px-6 btn-outline-custom"
+          className="px-4 py-2 text-sm btn-outline-custom"
         >
           Reset
         </Button>
       </div>
-
-      {restTimerSeconds === 0 && (
-        <div className="text-red-700 font-semibold animate-pulse">
-          Time's up! 🔔
-        </div>
-      )}
     </div>
   );
 };

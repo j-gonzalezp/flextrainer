@@ -139,7 +139,7 @@ const GoalList: React.FC<GoalListProps> = ({
               <Button
                 variant={goal.active === 1 ? "default" : "outline"}
                 size="sm"
-                className={`px-3 py-1 h-8 ${goal.active === 1 ? "bg-brand-success" : "bg-muted hover:bg-muted-foreground border border-border"}`}
+                className={`px-3 py-1 h-8 ${goal.active === 1 ? "bg-accent text-accent-foreground hover:bg-accent/90" : "bg-muted hover:bg-muted-foreground border border-border"}`}
                 onClick={() => handleToggleActive(goal.id, goal.active)}
                 disabled={isLoading}
               >

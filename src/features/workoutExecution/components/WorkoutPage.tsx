@@ -10,7 +10,7 @@ import CurrentExerciseDisplay from './CurrentExerciseDisplay';
 import PerformanceLogger from './PerformanceLogger';
 import type { SetData as PerformanceLoggerSetData } from './PerformanceLogger';
 import ChangeExerciseModal from './ChangeExerciseModal';
-import RestTimerControl from './RestTimerControl'; // Import RestTimerControl
+import RestTimerControl from './RestTimerControl';
 import type { Goal } from '@/features/goalsManagement/types';
 
 const WorkoutPage: React.FC = () => {
@@ -38,11 +38,11 @@ const WorkoutPage: React.FC = () => {
     handleLogPerformance,
     handlePauseCurrentGoal,
     handleChangeCurrentGoal,
-    handleOpenPerformanceLoggerModal, // Import the new function
-    exerciseTimerControlRef, // Import the ref
-    handleExerciseTimerPause, // Import new handler
-    handleExerciseTimerComplete, // Import new handler
-    handleExerciseTimerSoundTrigger, // Import new handler
+    handleOpenPerformanceLoggerModal,
+    exerciseTimerControlRef,
+    handleExerciseTimerPause,
+    handleExerciseTimerComplete,
+    handleExerciseTimerSoundTrigger,
 
     // Rest Timer imports
     restTimerSeconds,
@@ -85,16 +85,16 @@ const WorkoutPage: React.FC = () => {
       currentGoalRef.current = currentGoal;
   }, [currentGoal]);
 
-  console.log('--- WorkoutPage Category Filter Check ---'); // Added log
-  console.log('selectedWorkoutMicrocycle:', selectedWorkoutMicrocycle); // Added log
-  console.log('isLoadingGoals:', isLoadingGoals); // Added log
-  console.log('availableCategories:', availableCategories); // Added log
-  console.log('availableCategories.length:', availableCategories.length); // Added log
-  console.log('availableEquipment:', availableEquipment); // ADD THIS LOG
-  console.log('availableEquipment.length:', availableEquipment.length); // ADD THIS LOG
-  console.log('availableEquipment:', availableEquipment); // ADD THIS LOG
-  console.log('availableEquipment.length:', availableEquipment.length); // ADD THIS LOG
-  console.log('--- End WorkoutPage Category Filter Check ---'); // Added log
+  console.log('--- WorkoutPage Category Filter Check ---');
+  console.log('selectedWorkoutMicrocycle:', selectedWorkoutMicrocycle);
+  console.log('isLoadingGoals:', isLoadingGoals);
+  console.log('availableCategories:', availableCategories);
+  console.log('availableCategories.length:', availableCategories.length);
+  console.log('availableEquipment:', availableEquipment);
+  console.log('availableEquipment.length:', availableEquipment.length);
+  console.log('availableEquipment:', availableEquipment);
+  console.log('availableEquipment.length:', availableEquipment.length);
+  console.log('--- End WorkoutPage Category Filter Check ---');
 
   if (isLoadingMicrocycles && !selectedWorkoutMicrocycle) { return <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)]"><Loader2 className="h-12 w-12 animate-spin text-primary mb-4" /><p className="text-lg text-slate-600">Cargando microciclos...</p></div>; }
   if (selectedWorkoutMicrocycle !== null && isLoadingGoals) { return <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)]"><Loader2 className="h-12 w-12 animate-spin text-primary mb-4" /><p className="text-lg text-slate-600">Cargando ejercicios...</p></div>; }
@@ -121,10 +121,10 @@ const WorkoutPage: React.FC = () => {
                 goal={currentGoal}
                 onChangeExerciseClick={handleOpenChangeExerciseModal}
                 isProcessingChange={isChangeExerciseModalOpen}
-                exerciseTimerControlRef={exerciseTimerControlRef} // Pass the ref
-                onExerciseTimerPause={handleExerciseTimerPause} // Pass the handler
-                onExerciseTimerComplete={handleExerciseTimerComplete} // Pass the handler
-                onExerciseTimerSoundTrigger={handleExerciseTimerSoundTrigger} // Pass the handler
+                exerciseTimerControlRef={exerciseTimerControlRef}
+                onExerciseTimerPause={handleExerciseTimerPause}
+                onExerciseTimerComplete={handleExerciseTimerComplete}
+                onExerciseTimerSoundTrigger={handleExerciseTimerSoundTrigger}
                 onPauseExerciseClick={handlePauseCurrentGoal}
               />
               <Dialog open={isPerformanceLoggerModalOpen} onOpenChange={setIsPerformanceLoggerModalOpen}>
@@ -146,25 +146,34 @@ const WorkoutPage: React.FC = () => {
                   />
                 </DialogContent>
                 <DialogTrigger asChild>
-                  {!isPerformanceLoggerModalOpen && ( // Only show the button if the modal is not open
+                  {!isPerformanceLoggerModalOpen && (
                     <div className="space-y-3">
                       <Button
                         disabled={isLoggingPerformance || isPausingGoal || !currentGoal}
-                        variant="default"
+                        variant="default" // Mantener variant="default"
                         size="lg"
-                        className="w-full btn-primary-custom"
-                        onClick={() => { // Add onClick handler
+                        className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
+                        onClick={() => {
                           handleOpenPerformanceLoggerModal();
-                          // setIsPerformanceLoggerModalOpen(true); // This is handled by DialogTrigger
                         }}
                       >
                         Hecho / Registrar Set
                       </Button>
                       <div className="grid grid-cols-2 gap-3">
-                        <Button onClick={handlePauseCurrentGoal} variant="outline" disabled={isLoggingPerformance || isPausingGoal || !currentGoal} className="w-full btn-outline-custom">
+                        <Button
+                          onClick={handlePauseCurrentGoal}
+                          variant="outline" // Usar variant="outline"
+                          disabled={isLoggingPerformance || isPausingGoal || !currentGoal}
+                          className="w-full btn-outline-custom" // Usar la clase personalizada
+                        >
                           {isPausingGoal ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}Pausar Ejercicio
                         </Button>
-                        <Button onClick={selectNextGoal} variant="secondary" disabled={isLoggingPerformance || isPausingGoal || !currentGoal} className="btn-neutral-custom">
+                        <Button
+                          onClick={selectNextGoal}
+                          variant="outline" // Cambiar a variant="outline" para que no tenga color de fondo
+                          disabled={isLoggingPerformance || isPausingGoal || !currentGoal}
+                          className="btn-neutral-custom" // Usar la clase personalizada
+                        >
                           Siguiente / Omitir
                         </Button>
                       </div>
@@ -172,8 +181,6 @@ const WorkoutPage: React.FC = () => {
                   )}
                 </DialogTrigger>
               </Dialog>
-              {/* DialogTrigger for Performance Logger */}
-              
             </>
           ) : (
              selectedWorkoutMicrocycle !== null && !isLoadingGoals && (
@@ -428,8 +435,6 @@ const WorkoutPage: React.FC = () => {
                 </Dialog>
               </div>
             )}
-
-
             </div>
         )}
       </div>
