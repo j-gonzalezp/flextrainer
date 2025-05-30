@@ -72,10 +72,10 @@ const ExerciseParameterConfigItem: React.FC<ExerciseParameterConfigItemProps> = 
         parsedValue = ''; // Mantener vacío para input
     } else if (paramName === 'sets' || paramName === 'reps' || paramName === 'duration_seconds') {
         parsedValue = parseInt(value);
-        if (isNaN(parsedValue)) parsedValue = '';
+        if (isNaN(parsedValue)) parsedValue = null;
     } else if (paramName === 'weight') {
         parsedValue = parseFloat(value);
-        if (isNaN(parsedValue)) parsedValue = '';
+        if (isNaN(parsedValue)) parsedValue = null;
     }
     onUpdate(exerciseConfig.id, { [paramName]: parsedValue });
   };

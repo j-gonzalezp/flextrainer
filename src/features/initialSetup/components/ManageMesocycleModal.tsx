@@ -139,9 +139,9 @@ const ManageMesocycleModal: React.FC<ManageMesocycleModalProps> = ({
           equipment_needed: exercise.equipment_needed || [], // <-- ADD THIS LINE, default to empty array
           // *** CORRECCIÓN CLAVE: NO usar default_sets aquí, dejar que Step3 lo sugiera ***
           sets: '',
-          reps: exercise.default_reps ?? '',
-          weight: exercise.default_weight ?? '',
-          duration_seconds: exercise.default_duration_seconds ?? '',
+          reps: exercise.default_reps ?? null,
+          weight: exercise.default_weight ?? null,
+          duration_seconds: exercise.default_duration_seconds ?? null,
           categories_general: exercise.general_categories,
           categories_specific: exercise.specific_categories,
           notes: exercise.description,
