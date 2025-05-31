@@ -1,0 +1,28 @@
+[33m7605ddc[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mwizard[m[33m, [m[1;31morigin/wizard[m[33m)[m ts errores
+[33mce1d0ea[m fix ts
+[33m8554547[m build
+[33m36dbfe9[m ok
+[33m58bce8d[m boton mescociclo ok
+[33m5329ae5[m weight time updated
+[33m82e36cb[m pre wieght modal
+[33m09a27e1[m workout page styling
+[33mdd4c7fe[m estilos mejorados, falta workoutpage
+[33md00fa24[m indexcss
+[33mcf7fa1c[m first microcycle ok
+[33mab75d98[m cambios varios
+[33m5826701[m Update @types/date-fns
+[33m946219e[m Add missing date-fns dependency
+[33m85a08c4[m fix errors for cloudflare
+[33md471a69[m build ok
+[33ma1be22e[m casi ok
+[33mcf3dc19[m problemas de compilacion fixed
+[33mb65ca9c[m wizard casi ok
+[33mf7b5a5f[m pre-goalswizard
+[33m6f97e24[m libreria ok
+[33mbc2cd83[m[33m ([m[1;31morigin/main[m[33m, [m[1;32mmain[m[33m)[m ok
+[33m1a1b2af[m estilos
+[33mf75ce64[m modal ok
+[33mc7c7e73[m exercise selector
+[33m532d7de[m avances varios
+[33m7260fbb[m files
+[33m61f5d63[m first commit

@@ -10,14 +10,13 @@ import { Loader2, CheckCircle } from 'lucide-react';
 
 interface Step4ReviewAndCreateProps {
   finalGoalConfigurations: ChosenExerciseGoalData[];
-  onSubmitGoals: () => void;
+  onSubmitGoals?: () => void;
   isSubmitting: boolean;
   error: string | null;
 }
 
 const Step4ReviewAndCreate: React.FC<Step4ReviewAndCreateProps> = ({
-  finalGoalConfigurations,
-  
+  finalGoalConfigurations = [],
   isSubmitting,
   error,
 }) => {
@@ -71,11 +70,14 @@ const Step4ReviewAndCreate: React.FC<Step4ReviewAndCreateProps> = ({
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="text-xs px-4 pb-3 space-y-0.5 text-slate-600">
-                    <p><strong>Sets Semanales:</strong> {goal.sets || 'N/A'}</p>
-                    <p><strong>Reps por Set:</strong> {goal.reps || 'N/A'}</p>
-                    {/* Convertir a string para mostrar "N/A" si es null/undefined/'' */}
-                    {goal.weight !== null && goal.weight !== undefined && goal.weight !== '' && <p><strong>Peso:</strong> {goal.weight} kg</p>}
-                    {goal.duration_seconds !== null && goal.duration_seconds !== undefined && goal.duration_seconds !== '' && <p><strong>Duración por Set:</strong> {goal.duration_seconds}s</p>}
+                    <p><strong>Sets Semanales:</strong> {goal.sets ?? 'N/A'}</p>
+                    <p><strong>Reps por Set:</strong> {goal.reps ?? 'N/A'}</p>
+                    {goal.weight != null && goal.weight !== '' && (
+                      <p><strong>Peso:</strong> {goal.weight} kg</p>
+                    )}
+                    {goal.duration_seconds != null && goal.duration_seconds !== '' && (
+                      <p><strong>Duración por Set:</strong> {goal.duration_seconds}s</p>
+                    )}
                     
                     {(goal.categories_general && goal.categories_general.length > 0) && 
                         <p><strong>Cat. General:</strong> {goal.categories_general.join(', ')}</p>}

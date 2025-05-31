@@ -2,23 +2,9 @@ import { toast } from 'sonner';
 import supabase from '@/assets/supabase/client';
 
 
+import { LibraryExercise } from '@/features/initialSetup/types';
+
 // --- Type Definitions ---
-export interface LibraryExercise {
-  id: string;
-  created_at: string;
-  // user_id REMOVED: La librería es totalmente pública y no tiene un propietario por ejercicio.
-  exercise_name: string;
-  description: string | null;
-  general_categories: string[];
-  specific_categories: string[];
-  equipment_needed: string[];
-  suggested_variations: string[] | null; // Array de UUIDs como strings en TS
-  default_sets: number | null;
-  default_reps: number | null;
-  default_weight: number | null; // `numeric` de DB se mapea a `number` en TS
-  default_duration_seconds: number | null;
-  is_public: boolean; // Column still exists in DB, but its value will effectively always be TRUE for a public library
-}
 
 export interface LibraryExerciseFilter {
   generalCategories?: string[];
