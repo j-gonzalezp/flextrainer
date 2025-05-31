@@ -32,11 +32,13 @@ function CommandDialog({
   description = "Search for a command to run...",
   children,
   className,
+  showCloseButton, // Explicitly exclude showCloseButton
   ...props
 }: React.ComponentProps<typeof Dialog> & {
   title?: string
   description?: string
   className?: string
+  showCloseButton?: boolean // Add showCloseButton to the type definition
 }) {
   return (
     <Dialog {...props}>

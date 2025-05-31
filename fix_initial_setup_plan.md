@@ -1,27 +1,23 @@
-# Plan to Fix Initial Setup Weight and Duration Issue
+# Plan to Fix TypeScript Errors in ManageMesocycleModal.tsx
 
 **Problem:**
 
-The suggested weights and durations in the initial setup modal are not being saved to the database correctly. This is because the `Step3ParameterConfig` component converts `NaN` values to empty strings (`''`), and the `handleToggleChosenExercise` function in `ManageMesocycleModal.tsx` initializes the `weight` and `duration_seconds` properties with empty strings (`''`) if the default values are null.
+TypeScript errors in `src/features/initialSetup/components/ManageMesocycleModal.tsx` indicate that the types for `reps`, `weight`, and `duration_seconds` are not correctly assigned when creating a `GoalInsert` object. The component is assigning values that can be `number | "" | null` to properties that expect `number | null` or `number | null | undefined`.
+
+**Root Cause:**
+
+The issue stems from the input fields in the modal, which can return empty strings.
 
 **Solution:**
 
-1.  Modify `handleToggleChosenExercise` in `ManageMesocycleModal.tsx`:
-    *   Replace `weight: exercise.default_weight ?? '',` with `weight: exercise.default_weight ?? null,`
-    *   Replace `duration_seconds: exercise.default_duration_seconds ?? '',` with `duration_seconds: exercise.default_duration_seconds ?? null,`
-2.  Modify `handleParamChange` in `Step3ParameterConfig.tsx`:
-    *   Replace `parsedValue = '';` with `parsedValue = null;` in the `if (isNaN(parsedValue))` blocks for both `weight` and `duration_seconds`.
+Modify the code to handle the empty string case. This involves converting the empty string to `null` before assigning it to the `GoalInsert` object.
 
-**Testing:**
+**Steps:**
 
-1.  Manually test the component by selecting exercises with and without default weights and durations.
-2.  Verify that the suggested weights and durations are correctly displayed in the `Step3ParameterConfig.tsx` component.
-3.  Verify that the values are correctly saved to the database as numbers or `null`.
-
-**Impact:**
-
-The potential impact of this change is minimal. The only code that is being modified is the `handleParamChange` function in `Step3ParameterConfig.tsx` and the `handleToggleChosenExercise` function in `ManageMesocycleModal.tsx`. The changes are limited to the handling of empty and invalid numerical inputs.
-
-**Rollback Plan:**
-
-If any issues arise after deploying the changes, revert the changes to the `handleParamChange` function in `Step3ParameterConfig.tsx` and the `handleToggleChosenExercise` function in `ManageMesocycleModal.tsx`.
+1.  **Inspect the code:** Use `read_file` to examine the relevant code in `src/features/initialSetup/components/ManageMesocycleModal.tsx` around lines 228-230 and in `src/features/goalsManagement/types.ts` to understand the context of the error.
+2.  **Identify the source of the empty string:** Determine where the empty string is being introduced. It's likely coming from an input field that isn't properly converting to a number.
+3.  **Implement a fix:** Modify the code to handle the empty string case. This could involve:
+    *   Converting the empty string to `null` before assigning it to the `GoalInsert` object.
+    *   Using a conditional to only assign the value if it's a valid number.
+4.  **Apply the changes:** Use `apply_diff` to apply the fix to `src/features/initialSetup/components/ManageMesocycleModal.tsx`. Use a ternary operator to check if the value is an empty string. If it is, convert it to `null`; otherwise, convert it to a number using `Number()` or keep it as null if it's already null.
+5.  **Verify the fix:** After applying the changes, the TypeScript errors should be resolved.
